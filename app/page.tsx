@@ -1,11 +1,11 @@
 export default function Home() {
   return (
     <main className="bg-white text-slate-950">
-      <header className="fixed top-0 left-0 z-50 w-full bg-white/90 backdrop-blur border-b">
+      <header className="fixed top-0 left-0 z-50 w-full border-b bg-white/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <img src="/logo-afvn.png" alt="AFVN Nantes" className="h-14 w-auto" />
 
-          <nav className="hidden md:flex gap-8 font-semibold text-slate-900">
+          <nav className="hidden gap-8 font-semibold text-slate-900 md:flex">
             <a href="#accueil">Accueil</a>
             <a href="#apropos">À propos</a>
             <a href="#pasteur">Pasteur</a>
@@ -14,14 +14,21 @@ export default function Home() {
             <a href="#contact">Contact</a>
           </nav>
 
-          <a href="#contact" className="rounded-full bg-yellow-600 px-5 py-3 font-bold text-white hover:bg-yellow-700">
+          <a
+            href="#contact"
+            className="rounded-full bg-yellow-600 px-5 py-3 font-bold text-white hover:bg-yellow-700"
+          >
             Nous visiter
           </a>
         </div>
       </header>
 
       <section id="accueil" className="pt-24">
-        <img src="/hero-afvn.png" alt="AFVN Nantes" className="h-[80vh] w-full object-cover" />
+        <img
+          src="/hero-afvn.png"
+          alt="AFVN Nantes"
+          className="h-[80vh] w-full object-cover"
+        />
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-20 text-center">
@@ -29,21 +36,28 @@ export default function Home() {
           Assemblées Fleuve de Vie pour les Nations
         </p>
 
-        <h1 className="mb-6 text-4xl font-black md:text-6xl">Église de Nantes</h1>
+        <h1 className="mb-6 text-4xl font-black md:text-6xl">
+          Église de Nantes
+        </h1>
 
         <p className="mx-auto max-w-3xl text-xl leading-9 text-slate-700">
-          Une Église où la Parole et l&apos;Esprit s&apos;accordent pour engendrer des porteurs de vie.
+          Une Église où la Parole et l&apos;Esprit s&apos;accordent pour engendrer
+          des porteurs de vie.
         </p>
 
         <div className="mt-10 flex flex-col justify-center gap-4 md:flex-row">
-          <a href="#contact" className="rounded-full bg-yellow-600 px-8 py-4 font-bold text-white">
+          <a
+            href="#contact"
+            className="rounded-full bg-yellow-600 px-8 py-4 font-bold text-white hover:bg-yellow-700"
+          >
             Nous rendre visite
           </a>
-          <a href="#enseignements" className="rounded-full border border-yellow-600 px-8 py-4 font-bold text-yellow-700">
+
+          <a
+            href="#enseignements"
+            className="rounded-full border border-yellow-600 px-8 py-4 font-bold text-yellow-700 hover:bg-yellow-50"
+          >
             Enseignements
-          </a>
-          <a href="#televerser" className="rounded-full bg-slate-950 px-8 py-4 font-bold text-white">
-            Téléverser une vidéo
           </a>
         </div>
       </section>
@@ -52,7 +66,9 @@ export default function Home() {
         <div className="mx-auto grid max-w-6xl gap-8 md:grid-cols-2">
           <div className="rounded-3xl bg-white/10 p-10">
             <p className="font-bold text-yellow-500">Vendredi</p>
-            <h2 className="mt-3 text-3xl font-black">Enseignement & Intercession</h2>
+            <h2 className="mt-3 text-3xl font-black">
+              Enseignement & Intercession
+            </h2>
             <p className="mt-4 text-xl">19h00 — 20h30</p>
           </div>
 
@@ -66,10 +82,12 @@ export default function Home() {
 
       <section id="apropos" className="mx-auto max-w-7xl px-6 py-24">
         <h2 className="mb-8 text-4xl font-black">Qui sommes-nous ?</h2>
+
         <p className="max-w-4xl text-lg leading-9 text-slate-700">
-          Née dans le cœur de l’Apôtre Pamphile Jean Sylvain MAYINGUIDI depuis la fin de l’année 1988,
-          la Communauté des Assemblées Fleuve de Vie pour les Nations s’est développée au Congo,
-          en RDC puis en France. L’assemblée de Nantes a été implantée le 10 mars 2024.
+          Née dans le cœur de l’Apôtre Pamphile Jean Sylvain MAYINGUIDI depuis
+          la fin de l’année 1988, la Communauté des Assemblées Fleuve de Vie
+          pour les Nations s’est développée au Congo, en RDC puis en France.
+          L’assemblée de Nantes a été implantée le 10 mars 2024.
         </p>
       </section>
 
@@ -109,31 +127,39 @@ export default function Home() {
       </section>
 
       <section id="enseignements" className="mx-auto max-w-7xl px-6 py-24">
-        <h2 className="mb-6 text-4xl font-black">Prédications & Enseignements</h2>
+        <h2 className="mb-6 text-4xl font-black">
+          Prédications & Enseignements
+        </h2>
+
         <p className="mb-8 max-w-3xl text-lg text-slate-700">
-          Retrouvez nos messages, enseignements bibliques et temps d’exhortation.
+          Retrouvez nos messages, enseignements bibliques et temps
+          d’exhortation.
         </p>
 
-        <a href="https://www.youtube.com/watch?v=SqzKK640mww" target="_blank" className="inline-block rounded-full bg-yellow-600 px-8 py-4 font-bold text-white">
+        <a
+          href="https://www.youtube.com/watch?v=SqzKK640mww"
+          target="_blank"
+          className="inline-block rounded-full bg-yellow-600 px-8 py-4 font-bold text-white hover:bg-yellow-700"
+        >
           Voir sur YouTube
         </a>
-      </section>
-
-      <section id="televerser" className="bg-slate-950 px-6 py-24 text-white">
-        <div className="mx-auto max-w-4xl text-center">
-          <h2 className="mb-6 text-4xl font-black">Téléverser une vidéo</h2>
-          <input type="file" accept="video/*" className="rounded-xl bg-white p-4 text-slate-950" />
-        </div>
       </section>
 
       <section id="evenements" className="mx-auto max-w-7xl px-6 py-24">
         <h2 className="mb-10 text-4xl font-black">Événements</h2>
 
         <div className="grid gap-6 md:grid-cols-4">
-          {["Conférences", "Séminaires", "Veillées de prière", "Worship sessions"].map((item) => (
+          {[
+            "Conférences",
+            "Séminaires",
+            "Veillées de prière",
+            "Worship sessions",
+          ].map((item) => (
             <div key={item} className="rounded-3xl border p-8 shadow-sm">
               <h3 className="text-xl font-black">{item}</h3>
-              <p className="mt-4 text-slate-600">Venez vivre un temps fort dans la présence de Dieu.</p>
+              <p className="mt-4 text-slate-600">
+                Venez vivre un temps fort dans la présence de Dieu.
+              </p>
             </div>
           ))}
         </div>
@@ -142,8 +168,42 @@ export default function Home() {
       <section id="contact" className="bg-slate-50 px-6 py-24">
         <div className="mx-auto max-w-5xl text-center">
           <h2 className="mb-6 text-4xl font-black">Nous contacter</h2>
+
           <p className="text-lg">69 bis, rue du Bêle, 44300 Nantes</p>
           <p className="mt-2 text-lg font-bold">+33 7 67 10 30 45</p>
+
+          <div className="mt-8 flex flex-col justify-center gap-4 md:flex-row">
+            <a
+              href="tel:+33767103045"
+              className="rounded-full bg-yellow-600 px-8 py-4 font-bold text-white hover:bg-yellow-700"
+            >
+              Appeler
+            </a>
+
+            <a
+              href="https://www.instagram.com/afvnnantes/"
+              target="_blank"
+              className="rounded-full border px-8 py-4 font-bold hover:bg-white"
+            >
+              Instagram
+            </a>
+
+            <a
+              href="https://www.facebook.com/people/AFVN-%C3%89glise-de-Nantes/61586115265972/"
+              target="_blank"
+              className="rounded-full border px-8 py-4 font-bold hover:bg-white"
+            >
+              Facebook
+            </a>
+
+            <a
+              href="https://maps.google.com/?q=69+bis+rue+du+Bêle+44300+Nantes"
+              target="_blank"
+              className="rounded-full border px-8 py-4 font-bold hover:bg-white"
+            >
+              Itinéraire
+            </a>
+          </div>
         </div>
       </section>
 
@@ -152,7 +212,8 @@ export default function Home() {
           <div>
             <img src="/logo-afvn.png" alt="AFVN" className="mb-4 h-16 w-auto" />
             <p className="text-slate-300">
-              Une Église où la Parole et l&apos;Esprit s&apos;accordent pour engendrer des porteurs de vie.
+              Une Église où la Parole et l&apos;Esprit s&apos;accordent pour
+              engendrer des porteurs de vie.
             </p>
           </div>
 
