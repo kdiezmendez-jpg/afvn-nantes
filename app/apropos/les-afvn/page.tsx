@@ -1,124 +1,103 @@
+import type { Metadata } from "next";
+import Image from "next/image";
+import { Button, PageHero } from "@/components/ui";
+
+export const metadata: Metadata = {
+  title: "Les AFVN — Historique & vision",
+  description:
+    "Les Assemblées Fleuve de Vie pour les Nations : une vision apostolique née en 1988, portée par la Parole, l'Esprit et la Croix.",
+};
+
+const pillars = [
+  { title: "La Parole", text: "La révélation vivante de Dieu, reçue, confessée et transmise." },
+  { title: "L'Esprit", text: "La puissance de Dieu qui conduit, transforme et équipe." },
+  { title: "La Croix", text: "Le fondement de la mort à soi et de la vie nouvelle en Christ." },
+];
+
+const timeline = [
+  { when: "1988", what: "La vision naît dans le cœur de l'Apôtre Pamphile Jean Sylvain MAYINGUIDI." },
+  { when: "République du Congo", what: "Premières assemblées et développement de la vision." },
+  { when: "RD Congo", what: "La vision se déploie en République Démocratique du Congo." },
+  { when: "France", what: "Implantation d'églises de proximité, dont l'église de Nantes." },
+];
+
 export default function LesAfvnPage() {
   return (
-    <main className="min-h-screen bg-white text-slate-950">
-      <section className="relative overflow-hidden bg-slate-950 px-6 py-20 text-white">
-        <div className="pointer-events-none absolute inset-0 opacity-20">
-          <div className="absolute left-10 top-10 h-72 w-72 rounded-full bg-yellow-500 blur-3xl" />
-          <div className="absolute bottom-10 right-10 h-96 w-96 rounded-full bg-blue-700 blur-3xl" />
-        </div>
+    <>
+      <PageHero
+        eyebrow="Les AFVN"
+        title="Assemblées Fleuve de Vie pour les Nations"
+        intro="Une vision apostolique portée par la Parole, l'Esprit et la Croix, afin de former des porteurs de vie pour les nations."
+      />
 
-        <div className="relative mx-auto max-w-7xl">
-          <a href="/" className="font-bold text-yellow-500">
-            ← Retour à l’accueil
-          </a>
-
-          <p className="mt-14 text-sm font-bold uppercase tracking-[0.35em] text-yellow-500">
-            Les AFVN
-          </p>
-
-          <h1 className="mt-4 max-w-5xl text-5xl font-black leading-tight md:text-7xl">
-            Assemblées Fleuve de Vie pour les Nations
-          </h1>
-
-          <p className="mt-6 max-w-3xl text-xl leading-9 text-slate-300">
-            Une vision apostolique portée par la Parole, l’Esprit et la Croix,
-            afin de former des porteurs de vie pour les nations.
-          </p>
-        </div>
-      </section>
-
-      <section className="mx-auto grid max-w-7xl gap-14 px-6 py-20 md:grid-cols-[420px_1fr]">
-        <div>
-          <div className="overflow-hidden rounded-[2rem] border-4 border-yellow-600 shadow-2xl">
-            <img
+      <section className="px-5 py-20 md:px-8 md:py-28">
+        <div className="mx-auto grid max-w-7xl gap-14 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+          <figure>
+            <Image
               src="/visionnaires-mayinguidi.jpg"
               alt="Apôtre Pamphile Jean Sylvain MAYINGUIDI et Ancienne Octavie Estelle MAYINGUIDI"
-              className="h-[520px] w-full object-cover"
+              width={1264}
+              height={842}
+              sizes="(min-width: 1024px) 40vw, 100vw"
+              className="rounded-3xl shadow-2xl shadow-navy-950/15"
             />
-          </div>
+            <figcaption className="mt-6 rounded-3xl bg-navy-900 p-7 text-white">
+              <p className="font-display text-xl font-semibold text-gold-300">Apôtre Pamphile Jean Sylvain MAYINGUIDI</p>
+              <p className="mt-1 text-sm text-white/70">Visionnaire des Assemblées Fleuve de Vie pour les Nations</p>
+              <div className="my-5 h-px bg-white/10" />
+              <p className="font-display text-lg font-semibold text-gold-300">Ancienne Octavie Estelle MAYINGUIDI</p>
+              <p className="mt-1 text-sm text-white/70">Son épouse</p>
+            </figcaption>
+          </figure>
 
-          <div className="mt-6 rounded-[2rem] bg-slate-950 p-6 text-center text-white shadow-xl">
-            <h2 className="text-2xl font-black text-yellow-500">
-              Apôtre Pamphile Jean Sylvain MAYINGUIDI
+          <div>
+            <p className="eyebrow text-gold-700">Historique & vision</p>
+            <h2 className="font-display mt-3 text-3xl font-semibold leading-tight text-navy-900 md:text-5xl">
+              Une vision née pour répandre la vie de Dieu.
             </h2>
-
-            <p className="mt-2 text-slate-300">
-              Visionnaire des Assemblées Fleuve de Vie pour les Nations
-            </p>
-
-            <div className="my-5 h-px bg-white/10" />
-
-            <h3 className="text-xl font-black text-yellow-500">
-              Ancienne Octavie Estelle MAYINGUIDI
-            </h3>
-
-            <p className="mt-2 text-slate-300">
-              Son épouse
-            </p>
-          </div>
-        </div>
-
-        <div className="flex flex-col justify-center">
-          <p className="text-sm font-bold uppercase tracking-[0.3em] text-yellow-700">
-            Historique & Vision
-          </p>
-
-          <h2 className="mt-4 text-4xl font-black leading-tight md:text-5xl">
-            Une vision née pour répandre la vie de Dieu.
-          </h2>
-
-          <p className="mt-8 text-lg leading-9 text-slate-700">
-            Née dans le cœur de son leader, l’Apôtre Pamphile Jean Sylvain
-            MAYINGUIDI, depuis la fin de l’année 1988, la vision des Assemblées
-            Fleuve de Vie pour les Nations a commencé à se développer en
-            République du Congo avant de se déployer en République Démocratique
-            du Congo, puis en France.
-          </p>
-
-          <p className="mt-6 text-lg leading-9 text-slate-700">
-            Les AFVN portent une vision centrée sur la communication de la vie
-            de Dieu à travers la prédication de l’Évangile. Cette vie est
-            transmise par des hommes et des femmes enseignés, transformés et
-            appelés à devenir de véritables porteurs de vie.
-          </p>
-
-          <div className="mt-8 grid gap-5 md:grid-cols-3">
-            <div className="rounded-3xl bg-slate-50 p-6 shadow-sm">
-              <p className="text-sm font-bold uppercase text-yellow-700">
-                La Parole
+            <div className="mt-8 space-y-6 text-lg leading-8 text-ink/75">
+              <p>
+                Née dans le cœur de son leader, l&apos;Apôtre Pamphile Jean Sylvain MAYINGUIDI, depuis la fin de
+                l&apos;année 1988, la vision des Assemblées Fleuve de Vie pour les Nations a commencé à se développer en
+                République du Congo avant de se déployer en République Démocratique du Congo, puis en France.
               </p>
-              <p className="mt-3 text-slate-700">
-                La révélation vivante de Dieu, reçue, confessée et transmise.
+              <p>
+                Les AFVN portent une vision centrée sur la communication de la vie de Dieu à travers la prédication de
+                l&apos;Évangile. Cette vie est transmise par des hommes et des femmes enseignés, transformés et appelés à
+                devenir de véritables porteurs de vie.
               </p>
             </div>
 
-            <div className="rounded-3xl bg-slate-50 p-6 shadow-sm">
-              <p className="text-sm font-bold uppercase text-yellow-700">
-                L’Esprit
-              </p>
-              <p className="mt-3 text-slate-700">
-                La puissance de Dieu qui conduit, transforme et équipe.
-              </p>
-            </div>
+            <ul className="mt-10 grid gap-4 sm:grid-cols-3">
+              {pillars.map((p) => (
+                <li key={p.title} className="rounded-2xl border border-navy-900/10 bg-white p-5">
+                  <p className="font-display text-lg font-semibold text-navy-900">{p.title}</p>
+                  <p className="mt-2 text-sm leading-6 text-ink/70">{p.text}</p>
+                </li>
+              ))}
+            </ul>
 
-            <div className="rounded-3xl bg-slate-50 p-6 shadow-sm">
-              <p className="text-sm font-bold uppercase text-yellow-700">
-                La Croix
-              </p>
-              <p className="mt-3 text-slate-700">
-                Le fondement de la mort à soi et de la vie nouvelle en Christ.
-              </p>
+            <ol className="mt-12 border-l border-gold-500/40">
+              {timeline.map((t) => (
+                <li key={t.when} className="relative pb-8 pl-8 last:pb-0">
+                  <span className="absolute -left-[5px] top-2 size-2.5 rounded-full bg-gold-500" aria-hidden />
+                  <p className="eyebrow text-gold-700">{t.when}</p>
+                  <p className="mt-1 text-ink/75">{t.what}</p>
+                </li>
+              ))}
+            </ol>
+
+            <p className="mt-10 text-lg leading-8 text-ink/75">
+              Le symbole du fleuve exprime l&apos;Évangile en mouvement : une vie qui coule, se répand et atteint les
+              nations par l&apos;implantation d&apos;églises de proximité et par la formation de disciples capables
+              d&apos;impacter leur génération.
+            </p>
+            <div className="mt-8">
+              <Button href="/nous-rejoindre">Nous rejoindre</Button>
             </div>
           </div>
-
-          <p className="mt-8 text-lg leading-9 text-slate-700">
-            Le symbole du fleuve exprime l’Évangile en mouvement : une vie qui
-            coule, se répand et atteint les nations par l’implantation
-            d’églises de proximité et par la formation de disciples capables
-            d’impacter leur génération.
-          </p>
         </div>
       </section>
-    </main>
+    </>
   );
 }

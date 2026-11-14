@@ -1,36 +1,40 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AFVN Nantes — site web & appli
 
-## Getting Started
+Site de l'Église AFVN de Nantes (Assemblées Fleuve de Vie pour les Nations), construit avec Next.js 16 et Tailwind CSS 4.
+Le site est aussi une **appli installable** (PWA) : sur téléphone, « Ajouter à l'écran d'accueil ».
 
-First, run the development server:
+## Démarrer
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev        # http://localhost:3000
+npm run build      # vérifie que tout compile
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Modifier le contenu
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Quoi | Où |
+|---|---|
+| Adresse, téléphone, réseaux sociaux, formulaire d'accueil | `lib/site.ts` |
+| Horaires des cultes | `lib/site.ts` → `schedule` |
+| Menu, événements, vidéos mises en avant | `lib/site.ts` → `nav`, `events`, `featuredVideos` |
+| Page d'accueil | `app/page.tsx` |
+| Couleurs et typographies | `app/globals.css` (`@theme`) |
+| Photos | `public/` (JPEG, 2000 px max, ~80 % de qualité) |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Variable d'environnement à définir en production : `NEXT_PUBLIC_SITE_URL` (ex. `https://www.afvn-nantes.fr`).
 
-## Learn More
+## Appli (PWA)
 
-To learn more about Next.js, take a look at the following resources:
+- `app/manifest.ts` : nom, couleurs et icônes de l'appli.
+- `public/sw.js` : consultation hors ligne (page `/hors-ligne` en secours). Changer `VERSION` pour forcer la mise à jour du cache.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Sécurité
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- En-têtes HTTP stricts dans `next.config.ts` : CSP, HSTS, anti-clickjacking, Permissions-Policy, pas d'en-tête `X-Powered-By`.
+- Vidéos YouTube chargées seulement au clic, via `youtube-nocookie.com`.
+- Dependabot (`.github/dependabot.yml`) et CI GitHub Actions (lint, build, `npm audit`).
 
-## Deploy on Vercel
+## Skills Claude Code
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`.claude/skills/` contient des skills (Vercel, Expo, Codelynx) utilisés par Claude Code sur ce projet.
