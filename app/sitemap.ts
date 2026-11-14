@@ -9,8 +9,6 @@ const routes = [
   "/nous-rejoindre",
   "/medias/eschatos",
   "/medias/worship-sessions",
-  "/medias/conferences",
-  "/medias/seminaires",
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

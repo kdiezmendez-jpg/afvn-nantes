@@ -3,6 +3,8 @@ import { Button, ComingSoon, PageHero } from "@/components/ui";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
+  // Page masquée des moteurs de recherche tant qu'elle n'a pas de contenu.
+  robots: { index: false, follow: true },
   title: "Séminaires",
   description: "Les séminaires AFVN : équiper les croyants pour qu'ils deviennent des disciples matures et formés.",
 };

@@ -4,6 +4,7 @@ import { Button, PageHero } from "@/components/ui";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/apropos/pasteur-local" },
   title: "Le Pasteur local",
   description:
     "Pasteur Diez Mendez Kambault, pasteur de l'AFVN Nantes : formation de disciples, mentorat et accompagnement spirituel.",

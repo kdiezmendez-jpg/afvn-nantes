@@ -4,6 +4,7 @@ import { Button, PageHero } from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "Les AFVN — Historique & vision",
+  alternates: { canonical: "/apropos/les-afvn" },
   description:
     "Les Assemblées Fleuve de Vie pour les Nations : une vision apostolique née en 1988, portée par la Parole, l'Esprit et la Croix.",
 };
@@ -34,10 +35,10 @@ export default function LesAfvnPage() {
         <div className="mx-auto grid max-w-7xl gap-14 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
           <figure>
             <Image
-              src="/visionnaires-mayinguidi.jpg"
+              src="/visionnaires-buste.jpg"
               alt="Apôtre Pamphile Jean Sylvain MAYINGUIDI et Ancienne Octavie Estelle MAYINGUIDI"
-              width={1264}
-              height={842}
+              width={720}
+              height={560}
               sizes="(min-width: 1024px) 40vw, 100vw"
               className="rounded-3xl shadow-2xl shadow-navy-950/15"
             />

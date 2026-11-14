@@ -61,10 +61,9 @@ export const nav: NavItem[] = [
     label: "Événements",
     href: "/#evenements",
     children: [
+      // Conférences et Séminaires : à rajouter ici quand leurs photos seront en ligne.
       { label: "ESCHATOS 2026", href: "/medias/eschatos" },
       { label: "Worship Sessions", href: "/medias/worship-sessions" },
-      { label: "Conférences", href: "/medias/conferences" },
-      { label: "Séminaires", href: "/medias/seminaires" },
     ],
   },
   { label: "Nous rejoindre", href: "/nous-rejoindre" },
@@ -86,23 +85,37 @@ export const events = [
     href: "/medias/worship-sessions",
     image: "/medias/worship-sessions/photo-2.jpg",
   },
-  {
-    title: "Conférences",
-    kicker: "Impact • Réveil",
-    description: "Des temps forts de révélation et d'activation spirituelle.",
-    href: "/medias/conferences",
-    image: "/medias/eschatos/photo-3.jpg",
-  },
-  {
-    title: "Séminaires",
-    kicker: "Formation",
-    description: "Équiper les croyants pour devenir des disciples matures.",
-    href: "/medias/seminaires",
-    image: "/medias/eschatos/photo-2.jpg",
-  },
 ] as const;
 
 export const featuredVideos = [
   { id: "SqzKK640mww", title: "Worship Session AFVN Nantes — partie 1" },
   { id: "5xg0UTFqTYY", title: "Worship Session AFVN Nantes — partie 2" },
+] as const;
+
+// Questions fréquentes : affichées sur l'accueil et lues par Google (FAQ).
+export const faq = [
+  {
+    q: "Quels sont les horaires des cultes de l'AFVN Nantes ?",
+    a: "La grande célébration a lieu chaque dimanche de 9h30 à 11h30. Le vendredi, nous nous retrouvons de 19h00 à 20h30 pour un temps d'enseignement et d'intercession.",
+  },
+  {
+    q: "Où se trouve l'église ?",
+    a: "L'AFVN Nantes se réunit au 69 bis, rue du Bêle, 44300 Nantes.",
+  },
+  {
+    q: "Faut-il s'inscrire pour venir à un culte ?",
+    a: "Non, nos cultes sont ouverts à tous. Si vous le souhaitez, le formulaire d'accueil nous permet de faire connaissance et de vous recontacter.",
+  },
+  {
+    q: "Peut-on suivre les prédications à distance ?",
+    a: "Oui, nos prédications, enseignements et temps de louange sont publiés sur notre chaîne YouTube « AFVN Église de Nantes ».",
+  },
+  {
+    q: "Que signifie AFVN ?",
+    a: "AFVN signifie Assemblées Fleuve de Vie pour les Nations, une vision née en 1988 sous la conduite de l'Apôtre Pamphile Jean Sylvain MAYINGUIDI, présente en République du Congo, en RD Congo et en France.",
+  },
+  {
+    q: "Comment contacter le pasteur ?",
+    a: "Vous pouvez joindre l'église au +33 7 67 10 30 45 ou remplir le formulaire d'accueil : le Pasteur Diez Mendez Kambault ou un membre de l'équipe vous répondra.",
+  },
 ] as const;

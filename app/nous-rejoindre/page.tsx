@@ -4,6 +4,7 @@ import { Button, PageHero } from "@/components/ui";
 import { formatTime, schedule, site } from "@/lib/site";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/nous-rejoindre" },
   title: "Nous rejoindre",
   description: "Nouveau à Nantes ou de passage ? Devenez membre de la famille AFVN Nantes : remplissez le formulaire d'accueil.",
 };

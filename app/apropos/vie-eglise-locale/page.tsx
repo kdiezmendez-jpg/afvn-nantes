@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Button, Gallery, PageHero } from "@/components/ui";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/apropos/vie-eglise-locale" },
   title: "La vie de l'église locale",
   description: "Cultes, baptêmes, communion fraternelle : découvrez en images la vie de l'AFVN Nantes.",
 };

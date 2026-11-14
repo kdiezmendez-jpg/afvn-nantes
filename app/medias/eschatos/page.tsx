@@ -3,6 +3,7 @@ import { Button, Gallery, PageHero } from "@/components/ui";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/medias/eschatos" },
   title: "ESCHATOS 2026 — Conférence d'eschatologie",
   description:
     "ESCHATOS, la conférence annuelle des AFVN sur les temps de la fin. Édition 2026 : la bataille de Gog et Magog sur les Montagnes d'Israël.",

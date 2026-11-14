@@ -1,15 +1,15 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { Button, SectionHeading } from "@/components/ui";
+import { NextService } from "@/components/next-service";
 import { SocialLinks } from "@/components/social-links";
+import { Button, SectionHeading } from "@/components/ui";
 import { YouTubeLite } from "@/components/youtube-lite";
-import { events, featuredVideos, formatTime, schedule, site } from "@/lib/site";
+import { events, faq, featuredVideos, formatTime, schedule, site } from "@/lib/site";
 
-const pillars = [
-  { title: "La Parole", text: "La révélation vivante de Dieu, reçue, confessée et transmise." },
-  { title: "L'Esprit", text: "La puissance de Dieu qui conduit, transforme et équipe." },
-  { title: "La Croix", text: "Le fondement de la mort à soi et de la vie nouvelle en Christ." },
-];
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 const firstVisit = [
   {
@@ -26,13 +26,28 @@ const firstVisit = [
   },
 ];
 
-const life = ["/eglise/photo-4.jpg", "/eglise/IMG_0282.jpg", "/eglise/photo-5.jpg", "/eglise/photo-2.jpg"];
+const mosaic = [
+  { src: "/eglise/photo-4.jpg", alt: "Moment de partage fraternel après le culte" },
+  { src: "/eglise/IMG_0282.jpg", alt: "Une fidèle attentive pendant la prédication" },
+  { src: "/eglise/photo-5.jpg", alt: "Temps d'adoration pendant le culte" },
+  { src: "/eglise/photo-2.jpg", alt: "Une fidèle en prière" },
+];
+
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faq.map((f) => ({
+    "@type": "Question",
+    name: f.q,
+    acceptedAnswer: { "@type": "Answer", text: f.a },
+  })),
+};
 
 export default function Home() {
   return (
     <>
       {/* ——— Hero ——— */}
-      <section className="relative isolate flex min-h-[92svh] items-end overflow-hidden bg-navy-950 pb-16 pt-32 text-white md:items-center md:pb-24">
+      <section className="relative isolate flex min-h-[88svh] items-end overflow-hidden bg-navy-950 pb-20 pt-32 text-white md:items-center md:pb-28">
         <Image
           src="/eglise/photo-1.jpg"
           alt="Baptême par immersion à l'AFVN Nantes"
@@ -43,13 +58,13 @@ export default function Home() {
         />
         <div className="absolute inset-0 -z-10 bg-gradient-to-t from-navy-950 via-navy-950/60 to-navy-950/40 md:bg-gradient-to-r md:from-navy-950 md:via-navy-950/70 md:to-transparent" />
         <div className="mx-auto w-full max-w-7xl px-5 md:px-8">
-          <p className="eyebrow text-gold-300">Assemblées Fleuve de Vie pour les Nations</p>
-          <h1 className="font-display mt-5 max-w-3xl text-5xl font-semibold leading-[1.02] text-balance md:text-7xl">
+          <NextService />
+          <h1 className="font-display mt-6 max-w-3xl text-5xl font-semibold leading-[1.02] text-balance md:text-7xl">
             Une Église où coule <em className="text-gold-300">la vie de Dieu</em>.
           </h1>
           <p className="mt-6 max-w-xl text-lg leading-8 text-white/85 text-pretty">
-            À Nantes, nous sommes une famille où la Parole et l&apos;Esprit s&apos;accordent pour engendrer des
-            porteurs de vie. Vous êtes le bienvenu, tel que vous êtes.
+            Église évangélique à Nantes, nous sommes une famille où la Parole et l&apos;Esprit s&apos;accordent pour
+            engendrer des porteurs de vie. Vous êtes le bienvenu, tel que vous êtes.
           </p>
           <div className="mt-9 flex flex-col gap-3 sm:flex-row">
             <Button href="#visite">Préparer ma visite</Button>
@@ -61,8 +76,8 @@ export default function Home() {
       </section>
 
       {/* ——— Horaires ——— */}
-      <section aria-labelledby="horaires" className="relative z-10 -mt-10 px-5 md:px-8">
-        <h2 id="horaires" className="sr-only">
+      <section id="horaires" aria-labelledby="horaires-titre" className="relative z-10 -mt-10 px-5 md:px-8">
+        <h2 id="horaires-titre" className="sr-only">
           Horaires des cultes
         </h2>
         <div className="mx-auto grid max-w-6xl gap-px overflow-hidden rounded-3xl bg-navy-900/10 shadow-2xl shadow-navy-950/15 md:grid-cols-3">
@@ -96,65 +111,25 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ——— Vision ——— */}
-      <section className="px-5 py-24 md:px-8 md:py-32">
-        <div className="mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-2">
-          <div>
-            <SectionHeading
-              eyebrow="Notre vision"
-              title="Former des porteurs de vie pour les nations."
-              intro="Le fleuve exprime l'Évangile en mouvement : une vie qui coule, se répand et atteint les nations par des églises de proximité et des disciples capables d'impacter leur génération."
-            />
-            <ul className="mt-10 grid gap-4 sm:grid-cols-3">
-              {pillars.map((p) => (
-                <li key={p.title} className="rounded-2xl border border-navy-900/10 bg-white p-5">
-                  <p className="font-display text-lg font-semibold text-navy-900">{p.title}</p>
-                  <p className="mt-2 text-sm leading-6 text-ink/70">{p.text}</p>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-8">
-              <Button href="/apropos/les-afvn" variant="outline-dark">
-                Découvrir les AFVN
-              </Button>
-            </div>
-          </div>
-          <figure className="relative">
-            <Image
-              src="/theme-2026.jpg"
-              alt="Thème 2026 : Gabaon, posséder les sommets des montagnes — Deutéronome 11:24"
-              width={1672}
-              height={941}
-              sizes="(min-width: 1024px) 50vw, 100vw"
-              className="rounded-3xl shadow-2xl shadow-navy-950/20"
-            />
-            <figcaption className="mt-4 text-sm text-ink/60">
-              <span className="font-semibold text-gold-700">Thème de l&apos;année 2026</span> — Gabaon, posséder les
-              sommets des montagnes.
-            </figcaption>
-          </figure>
-        </div>
-      </section>
-
       {/* ——— Première visite ——— */}
-      <section id="visite" className="bg-white px-5 py-24 md:px-8 md:py-32">
+      <section id="visite" className="px-5 py-20 md:px-8 md:py-28">
         <div className="mx-auto max-w-7xl">
           <SectionHeading
             eyebrow="Première visite"
             title="Vous venez pour la première fois ?"
-            intro="Nous serions heureux de vous accueillir. Voici à quoi vous attendre."
+            intro="Pas besoin de s'inscrire : nos cultes sont ouverts à tous. Voici à quoi vous attendre."
             align="center"
           />
-          <ol className="mt-14 grid gap-6 md:grid-cols-3">
+          <ol className="mt-12 grid gap-5 md:grid-cols-3">
             {firstVisit.map((step, i) => (
-              <li key={step.title} className="rounded-3xl bg-ivory p-8">
+              <li key={step.title} className="rounded-3xl bg-white p-6 shadow-sm shadow-navy-950/5 md:p-8">
                 <span className="font-display text-4xl text-gold-500 tabular-nums">0{i + 1}</span>
                 <h3 className="font-display mt-4 text-xl font-semibold text-navy-900">{step.title}</h3>
                 <p className="mt-3 leading-7 text-ink/70">{step.text}</p>
               </li>
             ))}
           </ol>
-          <div className="mt-12 flex flex-col justify-center gap-3 sm:flex-row">
+          <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
             <Button href={site.welcomeForm} external>
               Remplir le formulaire d&apos;accueil
             </Button>
@@ -165,47 +140,18 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ——— Pasteur ——— */}
-      <section className="bg-navy-950 px-5 py-24 text-white md:px-8 md:py-28">
-        <div className="mx-auto grid max-w-6xl items-center gap-12 md:grid-cols-[320px_1fr]">
-          <Image
-            src="/pasteur-diez.jpg"
-            alt="Pasteur Diez Mendez Kambault"
-            width={640}
-            height={640}
-            sizes="320px"
-            className="mx-auto size-64 rounded-full object-cover md:size-80"
-          />
-          <div>
-            <p className="eyebrow text-gold-400">Le pasteur local</p>
-            <h2 className="font-display mt-3 text-3xl font-semibold md:text-5xl">Pasteur Diez Mendez Kambault</h2>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-white/75">
-              Marié et père d&apos;une fille, il prêche l&apos;Évangile depuis 2013. Son ministère est centré sur la
-              formation des disciples, le mentorat transformationnel et l&apos;accompagnement spirituel.
-            </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Button href="/apropos/pasteur-local" variant="outline">
-                En savoir plus
-              </Button>
-              <Button href={site.bookShop} external variant="outline">
-                Son livre « La Dernière Génération »
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* ——— Enseignements ——— */}
-      <section id="enseignements" className="px-5 py-24 md:px-8 md:py-32">
+      <section id="enseignements" className="bg-navy-950 px-5 py-20 text-white md:px-8 md:py-28">
         <div className="mx-auto max-w-7xl">
           <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
             <SectionHeading
+              tone="dark"
               eyebrow="Prédications & louange"
               title="Nourrissez votre foi, où que vous soyez."
-              intro="Messages, enseignements bibliques et temps d'adoration : retrouvez-les sur notre chaîne YouTube."
+              intro="Messages, enseignements bibliques et temps d'adoration sur notre chaîne YouTube."
             />
-            <Button href={site.socials.youtube} external variant="navy" className="shrink-0">
-              Toute la chaîne YouTube
+            <Button href={site.socials.youtube} external className="shrink-0">
+              S&apos;abonner à la chaîne
             </Button>
           </div>
           <div className="mt-12 grid gap-6 md:grid-cols-2">
@@ -216,22 +162,57 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ——— Notre église : vision + vie ——— */}
+      <section className="px-5 py-20 md:px-8 md:py-28">
+        <div className="mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-2">
+          <div>
+            <SectionHeading
+              eyebrow="Notre église"
+              title="Former des porteurs de vie pour les nations."
+              intro="Le fleuve exprime l'Évangile en mouvement : une vie qui coule, se répand et transforme. Adoration, enseignement, prière et communion fraternelle font battre le cœur de notre famille."
+            />
+            <ul className="mt-8 flex flex-wrap gap-2">
+              {["La Parole", "L'Esprit", "La Croix"].map((p) => (
+                <li key={p} className="rounded-full border border-gold-600/30 bg-white px-4 py-1.5 text-sm font-medium text-navy-900">
+                  {p}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Button href="/apropos/les-afvn" variant="navy">
+                Notre histoire & vision
+              </Button>
+              <Button href="/apropos/vie-eglise-locale" variant="outline-dark">
+                Voir la galerie
+              </Button>
+            </div>
+          </div>
+          <ul className="grid grid-cols-2 gap-4">
+            {mosaic.map((m, i) => (
+              <li key={m.src} className={`relative aspect-[4/5] overflow-hidden rounded-2xl ${i % 2 ? "translate-y-8" : ""}`}>
+                <Image src={m.src} alt={m.alt} fill sizes="(min-width: 1024px) 25vw, 50vw" className="object-cover" />
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
       {/* ——— Événements ——— */}
-      <section id="evenements" className="bg-white px-5 py-24 md:px-8 md:py-32">
+      <section id="evenements" className="bg-white px-5 py-20 md:px-8 md:py-28">
         <div className="mx-auto max-w-7xl">
-          <SectionHeading eyebrow="Événements" title="Les temps forts de l'église" />
-          <ul className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <SectionHeading eyebrow="Temps forts" title="Vivre l'église au-delà du dimanche" />
+          <ul className="mt-12 grid gap-6 md:grid-cols-3">
             {events.map((e) => (
               <li key={e.href}>
                 <Link
                   href={e.href}
-                  className="group relative isolate flex aspect-[3/4] flex-col justify-end overflow-hidden rounded-3xl p-6 text-white"
+                  className="group relative isolate flex aspect-[4/5] flex-col justify-end overflow-hidden rounded-3xl p-6 text-white"
                 >
                   <Image
                     src={e.image}
                     alt=""
                     fill
-                    sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                    sizes="(min-width: 768px) 33vw, 100vw"
                     className="-z-20 object-cover transition duration-700 group-hover:scale-105"
                   />
                   <span className="absolute inset-0 -z-10 bg-gradient-to-t from-navy-950 via-navy-950/50 to-transparent" />
@@ -242,41 +223,92 @@ export default function Home() {
                 </Link>
               </li>
             ))}
+            <li>
+              <figure className="flex h-full flex-col overflow-hidden rounded-3xl bg-ivory">
+                <Image
+                  src="/theme-2026.jpg"
+                  alt="Thème 2026 : Gabaon, posséder les sommets des montagnes — Deutéronome 11:24"
+                  width={1672}
+                  height={941}
+                  sizes="(min-width: 768px) 33vw, 100vw"
+                  className="w-full"
+                />
+                <figcaption className="flex flex-1 flex-col justify-center p-6">
+                  <span className="eyebrow text-gold-700">Thème de l&apos;année</span>
+                  <span className="font-display mt-2 text-2xl font-semibold text-navy-900">2026 · Gabaon</span>
+                  <span className="mt-2 text-sm leading-6 text-ink/70">
+                    « L&apos;Éternel, ton Dieu, sera avec toi. » — Deutéronome 11:24
+                  </span>
+                </figcaption>
+              </figure>
+            </li>
           </ul>
         </div>
       </section>
 
-      {/* ——— Vie de l'église ——— */}
-      <section className="px-5 py-24 md:px-8 md:py-32">
-        <div className="mx-auto max-w-7xl">
-          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
-            <SectionHeading
-              eyebrow="Vie de l'église"
-              title="Une famille, plus qu'une assemblée."
-              intro="Adoration, enseignement, prière, communion fraternelle : la vie de l'AFVN Nantes en images."
-            />
-            <Button href="/apropos/vie-eglise-locale" variant="outline-dark" className="shrink-0">
-              Voir la galerie
-            </Button>
+      {/* ——— Pasteur ——— */}
+      <section className="px-5 py-20 md:px-8 md:py-24">
+        <div className="mx-auto flex max-w-5xl flex-col items-center gap-10 rounded-[2rem] bg-navy-900 p-8 text-white md:flex-row md:p-12">
+          <Image
+            src="/pasteur-diez.jpg"
+            alt="Pasteur Diez Mendez Kambault"
+            width={480}
+            height={480}
+            sizes="224px"
+            className="size-48 shrink-0 rounded-full object-cover md:size-56"
+          />
+          <div>
+            <p className="eyebrow text-gold-400">Le pasteur local</p>
+            <h2 className="font-display mt-3 text-3xl font-semibold md:text-4xl">Pasteur Diez Mendez Kambault</h2>
+            <p className="mt-4 leading-7 text-white/75">
+              Il prêche l&apos;Évangile depuis 2013. Son ministère est centré sur la formation des disciples, le
+              mentorat transformationnel et l&apos;accompagnement spirituel. Auteur de « La Dernière Génération ».
+            </p>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <Button href="/apropos/pasteur-local" variant="outline">
+                Le connaître
+              </Button>
+              <Button href={site.bookShop} external variant="outline">
+                Découvrir son livre
+              </Button>
+            </div>
           </div>
-          <ul className="mt-12 grid grid-cols-2 gap-4 md:grid-cols-4">
-            {life.map((src, i) => (
-              <li key={src} className={`relative overflow-hidden rounded-2xl ${i % 2 ? "md:mt-10" : ""} aspect-[3/4]`}>
-                <Image
-                  src={src}
-                  alt="Moment de vie à l'AFVN Nantes"
-                  fill
-                  sizes="(min-width: 768px) 25vw, 50vw"
-                  className="object-cover"
-                />
-              </li>
+        </div>
+      </section>
+
+      {/* ——— FAQ ——— */}
+      <section id="faq" className="bg-white px-5 py-20 md:px-8 md:py-28">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd).replace(/</g, "\\u003c") }}
+        />
+        <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[1fr_1.4fr]">
+          <SectionHeading
+            eyebrow="Questions fréquentes"
+            title="Tout ce qu'il faut savoir avant de venir."
+            intro="Une autre question ? Appelez-nous, nous répondons avec plaisir."
+          />
+          <div className="divide-y divide-navy-900/10 border-y border-navy-900/10">
+            {faq.map((f) => (
+              <details key={f.q} className="group py-5">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-6 font-display text-lg font-semibold text-navy-900 [&::-webkit-details-marker]:hidden">
+                  {f.q}
+                  <span
+                    aria-hidden
+                    className="grid size-8 shrink-0 place-items-center rounded-full border border-navy-900/15 text-gold-700 transition group-open:rotate-45"
+                  >
+                    +
+                  </span>
+                </summary>
+                <p className="mt-3 max-w-2xl leading-7 text-ink/70">{f.a}</p>
+              </details>
             ))}
-          </ul>
+          </div>
         </div>
       </section>
 
       {/* ——— Contact ——— */}
-      <section id="contact" className="bg-navy-900 px-5 py-24 text-white md:px-8 md:py-28">
+      <section id="contact" className="bg-navy-900 px-5 py-20 text-white md:px-8 md:py-28">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-2">
           <div>
             <SectionHeading
@@ -315,7 +347,7 @@ export default function Home() {
               title="Plan d'accès à l'AFVN Nantes"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              className="size-full min-h-80 grayscale-[30%]"
+              className="size-full min-h-80"
             />
           </div>
         </div>

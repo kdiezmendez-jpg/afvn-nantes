@@ -4,6 +4,7 @@ import { YouTubeLite } from "@/components/youtube-lite";
 import { featuredVideos } from "@/lib/site";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/medias/worship-sessions" },
   title: "Worship Sessions",
   description: "Les Worship Sessions de l'AFVN Nantes : des moments consacrés à la louange, l'adoration et la présence de Dieu.",
 };
