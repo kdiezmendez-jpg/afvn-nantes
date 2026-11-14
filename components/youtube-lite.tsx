@@ -9,7 +9,7 @@ export function YouTubeLite({ id, title }: { id: string; title: string }) {
   const [active, setActive] = useState(false);
 
   return (
-    <div className="relative aspect-video overflow-hidden rounded-2xl bg-navy-950 shadow-xl shadow-navy-950/20">
+    <div className="relative aspect-video overflow-hidden rounded-2xl bg-night-950 shadow-xl shadow-night-950/20">
       {active ? (
         <iframe
           src={`https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`}
@@ -33,8 +33,8 @@ export function YouTubeLite({ id, title }: { id: string; title: string }) {
             sizes="(min-width: 768px) 50vw, 100vw"
             className="object-cover opacity-80 transition duration-500 group-hover:scale-[1.03] group-hover:opacity-100"
           />
-          <span className="absolute inset-0 bg-gradient-to-t from-navy-950/80 to-transparent" />
-          <span className="absolute left-1/2 top-1/2 grid size-16 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-gold-400 text-navy-950 shadow-lg transition group-hover:scale-110">
+          <span className="absolute inset-0 bg-gradient-to-t from-night-950/80 to-transparent" />
+          <span className="absolute left-1/2 top-1/2 grid size-16 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-gold-400 text-night-950 shadow-lg transition group-hover:scale-110">
             <svg viewBox="0 0 24 24" className="ml-1 size-6" fill="currentColor" aria-hidden>
               <path d="M8 5v14l11-7z" />
             </svg>

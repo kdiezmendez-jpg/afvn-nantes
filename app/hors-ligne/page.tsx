@@ -8,7 +8,8 @@ export default function HorsLignePage() {
   return (
     <PageHero
       eyebrow="Pas de connexion"
-      title="Vous êtes hors ligne."
+      lead="Vous êtes"
+      accent="hors ligne."
       intro={
         <>
           <p>Reconnectez-vous pour voir cette page. En attendant, voici l&apos;essentiel :</p>

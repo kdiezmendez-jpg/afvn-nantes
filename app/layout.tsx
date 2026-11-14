@@ -1,14 +1,20 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Inter } from "next/font/google";
+import { DM_Sans, Playfair_Display } from "next/font/google";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { MobileActionBar } from "@/components/mobile-action-bar";
 import { ServiceWorker } from "@/components/service-worker";
+import { TextSizeToggle } from "@/components/text-size";
 import { schedule, site } from "@/lib/site";
 import "./globals.css";
 
-const inter = Inter({ variable: "--font-inter", subsets: ["latin"], display: "swap" });
-const fraunces = Fraunces({ variable: "--font-fraunces", subsets: ["latin"], display: "swap" });
+const dmSans = DM_Sans({ variable: "--font-dm-sans", subsets: ["latin"], display: "swap" });
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -17,7 +23,7 @@ export const metadata: Metadata = {
     template: "%s · AFVN Nantes",
   },
   description:
-    "Église évangélique à Nantes (44300). Culte le dimanche à 9h30, enseignement et intercession le vendredi à 19h. " +
+    "Église évangélique à Nantes (44300) : culte de célébration le dimanche à 9h30, enseignement et intercession le vendredi à 19h. " +
     site.tagline,
   applicationName: site.name,
   keywords: ["église Nantes", "église évangélique Nantes", "AFVN", "Fleuve de Vie", "culte dimanche Nantes", "Nantes Est"],
@@ -32,7 +38,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#070f22",
+  themeColor: "#03141f",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -65,8 +71,14 @@ const jsonLd = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="fr" className={`${inter.variable} ${fraunces.variable}`}>
+    <html lang="fr" className={`${dmSans.variable} ${playfair.variable}`} suppressHydrationWarning>
       <body className="flex min-h-dvh flex-col pb-[calc(4rem+env(safe-area-inset-bottom))] font-sans lg:pb-0">
+        {/* Applique la taille de texte choisie avant l'affichage (évite un saut visuel). */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{var t=localStorage.getItem("afvn-text");if(t)document.documentElement.dataset.text=t}catch(e){}`,
+          }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
@@ -77,6 +89,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         </main>
         <SiteFooter />
         <MobileActionBar />
+        <TextSizeToggle />
         <ServiceWorker />
       </body>
     </html>

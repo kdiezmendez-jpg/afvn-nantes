@@ -1,7 +1,7 @@
 // Service worker AFVN Nantes : appli installable + consultation hors ligne.
 // Pages : réseau d'abord (toujours à jour), cache en secours.
 // Fichiers statiques et images : cache d'abord.
-const VERSION = "afvn-v2";
+const VERSION = "afvn-v3";
 const OFFLINE_URL = "/hors-ligne";
 const PRECACHE = [OFFLINE_URL, "/", "/emblem-afvn.png", "/icons/icon-192.png"];
 

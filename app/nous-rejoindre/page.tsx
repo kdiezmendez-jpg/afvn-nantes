@@ -1,33 +1,95 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { Button, PageHero } from "@/components/ui";
-import { formatTime, schedule, site } from "@/lib/site";
+import { CesaSection, FinalCta } from "@/components/sections";
+import { Button, DisplayTitle, Eyebrow, Lead, PageHero } from "@/components/ui";
+import { faq, formatTime, schedule, site } from "@/lib/site";
 
 export const metadata: Metadata = {
+  title: "Je suis nouveau — Préparer ma visite",
+  description:
+    "Première visite à l'AFVN Nantes ? Horaires, adresse, déroulement du culte et formulaire d'accueil CESA pour faire connaissance.",
   alternates: { canonical: "/nous-rejoindre" },
-  title: "Nous rejoindre",
-  description: "Nouveau à Nantes ou de passage ? Devenez membre de la famille AFVN Nantes : remplissez le formulaire d'accueil.",
 };
+
+const expect = [
+  { t: "Un accueil personnel", d: "L'équipe CESA vous reçoit, vous présente l'église et répond à vos questions." },
+  { t: "Un culte vivant", d: "Louange, prière et prédication de la Parole : la célébration du dimanche dure environ deux heures." },
+  { t: "Une famille", d: "Après le culte, prenez le temps de faire connaissance : vous êtes ici chez vous." },
+];
 
 export default function NousRejoindrePage() {
   return (
     <>
       <PageHero
-        eyebrow="Bienvenue à la Maison"
-        title="Devenez membre de notre famille spirituelle."
-        intro="Vous êtes nouveau, de passage, ou vous souhaitez faire partie de notre communauté ? Nous serions heureux de vous accueillir, de vous accompagner et de marcher avec vous dans votre croissance spirituelle."
+        eyebrow="Venez comme vous êtes"
+        lead="Bienvenue"
+        accent="à la Maison."
+        intro="Vous êtes nouveau, de passage, ou vous souhaitez faire partie de notre communauté ? Nous serions heureux de vous accueillir et de marcher avec vous."
+        image="/eglise/IMG_2766.jpg"
       >
-        <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Button href={site.welcomeForm} external>
             Remplir le formulaire d&apos;accueil
           </Button>
-          <Button href={site.phone.href} variant="outline">
-            Appeler l&apos;église
+          <Button href={site.mapsUrl} external variant="ghost-dark">
+            Itinéraire
           </Button>
         </div>
       </PageHero>
 
-      <section className="px-5 py-20 md:px-8">
+      <section className="px-5 py-20 md:px-8 md:py-28">
+        <div className="mx-auto grid max-w-7xl gap-14 lg:grid-cols-2">
+          <div>
+            <Eyebrow>Votre première visite</Eyebrow>
+            <DisplayTitle className="mt-4" lead="À quoi" accent="vous attendre ?" />
+            <ol className="mt-10 space-y-8">
+              {expect.map((e, i) => (
+                <li key={e.t} className="flex gap-5">
+                  <span className="font-display text-4xl text-gold-500">0{i + 1}</span>
+                  <span>
+                    <span className="font-display block text-2xl font-semibold">{e.t}</span>
+                    <span className="mt-1 block text-muted">{e.d}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </div>
+          <div className="bg-night-950 p-8 text-white md:p-10">
+            <p className="eyebrow text-gold-400">Infos pratiques</p>
+            <dl className="mt-6 space-y-6">
+              {schedule.map((s) => (
+                <div key={s.day}>
+                  <dt className="text-sm text-white/55">{s.day}</dt>
+                  <dd className="font-display text-2xl">
+                    {s.title} · {formatTime(s.start)}
+                  </dd>
+                </div>
+              ))}
+              <div>
+                <dt className="text-sm text-white/55">Adresse</dt>
+                <dd className="font-display text-2xl">
+                  {site.address.street}, {site.address.postalCode} {site.address.city}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-sm text-white/55">Téléphone</dt>
+                <dd className="font-display text-2xl">
+                  <a href={site.phone.href} className="hover:text-gold-300">
+                    {site.phone.display}
+                  </a>
+                </dd>
+              </div>
+            </dl>
+            <div className="mt-8 overflow-hidden rounded-xl">
+              <iframe src={site.mapsEmbed} title="Plan d'accès à l'AFVN Nantes" loading="lazy" referrerPolicy="no-referrer-when-downgrade" className="h-64 w-full" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <CesaSection />
+
+      <section className="bg-white px-5 py-20 md:px-8">
         <div className="mx-auto max-w-6xl">
           <Image
             src="/medias/banniere-afvn.jpg"
@@ -35,38 +97,13 @@ export default function NousRejoindrePage() {
             width={2400}
             height={600}
             sizes="(min-width: 1152px) 1152px, 100vw"
-            className="rounded-3xl shadow-xl shadow-navy-950/15"
+            className="w-full"
           />
-          <div className="mt-14 grid gap-6 md:grid-cols-3">
-            <div className="rounded-3xl bg-white p-8">
-              <p className="eyebrow text-gold-700">Étape 1</p>
-              <p className="font-display mt-2 text-xl font-semibold text-navy-900">Remplissez le formulaire</p>
-              <p className="mt-3 text-ink/70">
-                Quelques informations pour que notre équipe puisse vous contacter. Le formulaire est hébergé par Google
-                Forms.
-              </p>
-            </div>
-            <div className="rounded-3xl bg-white p-8">
-              <p className="eyebrow text-gold-700">Étape 2</p>
-              <p className="font-display mt-2 text-xl font-semibold text-navy-900">Venez à un culte</p>
-              <ul className="mt-3 space-y-1 text-ink/70">
-                {schedule.map((s) => (
-                  <li key={s.day}>
-                    {s.day} · {formatTime(s.start)} – {formatTime(s.end)}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="rounded-3xl bg-white p-8">
-              <p className="eyebrow text-gold-700">Étape 3</p>
-              <p className="font-display mt-2 text-xl font-semibold text-navy-900">Grandissez avec nous</p>
-              <p className="mt-3 text-ink/70">
-                Nous vous accompagnons dans votre intégration à l&apos;église et dans votre croissance spirituelle.
-              </p>
-            </div>
-          </div>
+          <Lead className="mx-auto mt-10 max-w-2xl text-center">{faq[2].a}</Lead>
         </div>
       </section>
+
+      <FinalCta />
     </>
   );
 }

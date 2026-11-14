@@ -57,7 +57,14 @@ const nextConfig: NextConfig = {
     ];
   },
   async redirects() {
-    return [{ source: "/medias/worship-sessions/nous-rejoindre", destination: "/nous-rejoindre", permanent: true }];
+    return [
+      { source: "/medias/worship-sessions/nous-rejoindre", destination: "/nous-rejoindre", permanent: true },
+      { source: "/apropos/les-afvn", destination: "/notre-eglise", permanent: true },
+      { source: "/apropos/pasteur-local", destination: "/notre-eglise#equipe", permanent: true },
+      { source: "/apropos/vie-eglise-locale", destination: "/notre-eglise#galerie", permanent: true },
+      { source: "/medias/conferences", destination: "/agenda", permanent: false },
+      { source: "/medias/seminaires", destination: "/agenda", permanent: false },
+    ];
   },
 };
 
