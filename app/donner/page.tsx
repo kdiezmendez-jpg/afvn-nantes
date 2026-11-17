@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import { Icon } from "@/components/icons";
 import { GiveSection } from "@/components/sections";
 import { DisplayTitle, Eyebrow, Lead, PageHero } from "@/components/ui";
 import { site } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "Donner — Dîmes, offrandes et projets",
+export const metadata: Metadata = pageMeta({
+  title: "Donner : dîmes, offrandes et projets · AFVN Nantes",
   description: "Soutenir la mission de l'AFVN Nantes : dîmes, offrandes, actions sociales et projets de l'église.",
-  alternates: { canonical: "/donner" },
-};
+  path: "/donner",
+});
 
 export default function DonnerPage() {
   const online = Boolean(site.donationUrl);

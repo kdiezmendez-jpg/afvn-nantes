@@ -39,7 +39,7 @@ export function DisplayTitle({
       {accent ? (
         <>
           {" "}
-          <em className={`font-medium italic ${tone === "dark" ? "text-gold-400" : "text-gold-600"}`}>{accent}</em>
+          <em className={`font-medium italic ${tone === "dark" ? "text-gold-400" : "text-gold-700"}`}>{accent}</em>
         </>
       ) : null}
     </Tag>

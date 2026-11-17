@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import Image from "next/image";
 import { DnaSection, FinalCta, MinistriesSection } from "@/components/sections";
 import { Button, DisplayTitle, Eyebrow, Gallery, Lead, PageHero } from "@/components/ui";
 import { gallery, pastorQuote, site } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "Notre église — Histoire, vision et équipe",
-  description:
-    "Les Assemblées Fleuve de Vie pour les Nations à Nantes : une vision née en 1988, le Pasteur Diez Mendez Kambault, nos ministères et la vie de l'église.",
-  alternates: { canonical: "/notre-eglise" },
-};
+export const metadata: Metadata = pageMeta({
+  title: "Notre église : histoire, vision et équipe · AFVN Nantes",
+  description: "Les Assemblées Fleuve de Vie pour les Nations à Nantes : une vision née en 1988, le Pasteur Diez Mendez Kambault, nos ministères et notre vie d'église.",
+  path: "/notre-eglise",
+});
 
 const timeline = [
   { when: "1988", what: "La vision naît dans le cœur de l'Apôtre Pamphile Jean Sylvain MAYINGUIDI." },
@@ -27,7 +27,11 @@ export default function NotreEglisePage() {
         accent="répandre la vie de Dieu."
         intro="Une vision apostolique portée par la Parole, l'Esprit et la Croix, afin de former des porteurs de vie pour les nations."
         image="/eglise/photo-1.jpg"
-      />
+      >
+        <div className="mt-8">
+          <Button href="/nous-rejoindre">Préparer ma première visite</Button>
+        </div>
+      </PageHero>
 
       {/* Histoire & visionnaires */}
       <section id="histoire" className="px-5 py-20 md:px-8 md:py-28">
@@ -112,7 +116,7 @@ export default function NotreEglisePage() {
               l&apos;auteur de « La Dernière Génération ».
             </Lead>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Button href={site.bookShop} external>
+              <Button href={site.bookShop} external variant="ghost-dark">
                 Se procurer le livre
               </Button>
               <Button href={site.phone.href} variant="ghost-dark">

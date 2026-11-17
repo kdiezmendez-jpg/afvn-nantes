@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
-import { FinalCta } from "@/components/sections";
+import { pageMeta } from "@/lib/seo";
 import { Button, DisplayTitle, Eyebrow, Gallery, Lead, PageHero } from "@/components/ui";
 import { site } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "ESCHATOS 2026 — Conférence d'eschatologie",
-  description:
-    "ESCHATOS, la conférence annuelle des AFVN sur les temps de la fin. Édition 2026 : la bataille de Gog et Magog sur les Montagnes d'Israël.",
-  alternates: { canonical: "/medias/eschatos" },
-};
+export const metadata: Metadata = pageMeta({
+  title: "ESCHATOS 2026 : conférence d'eschatologie · AFVN Nantes",
+  description: "ESCHATOS, la conférence annuelle des AFVN sur les temps de la fin. Édition 2026 : la bataille de Gog et Magog sur les Montagnes d'Israël.",
+  path: "/medias/eschatos",
+});
 
 const photos = [1, 2, 3, 4, 5, 6].map((n) => ({ src: `/medias/eschatos/photo-${n}.jpg`, alt: `ESCHATOS 2026 — photo ${n}` }));
 
@@ -56,7 +55,6 @@ export default function EschatosPage() {
           </div>
         </div>
       </section>
-      <FinalCta />
     </>
   );
 }

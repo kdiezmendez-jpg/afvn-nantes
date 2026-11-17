@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { DM_Sans, Playfair_Display } from "next/font/google";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { CookieBanner } from "@/components/cookie-banner";
 import { MobileActionBar } from "@/components/mobile-action-bar";
 import { ServiceWorker } from "@/components/service-worker";
 import { TextSizeToggle } from "@/components/text-size";
@@ -22,9 +23,7 @@ export const metadata: Metadata = {
     default: "AFVN Nantes — Assemblées Fleuve de Vie pour les Nations",
     template: "%s · AFVN Nantes",
   },
-  description:
-    "Église évangélique à Nantes (44300) : culte de célébration le dimanche à 9h30, enseignement et intercession le vendredi à 19h. " +
-    site.tagline,
+  description: "Église évangélique à Nantes : culte le dimanche à 9h30, enseignement et prière le vendredi à 19h. Une famille où la Parole et l'Esprit s'accordent.",
   applicationName: site.name,
   keywords: ["église Nantes", "église évangélique Nantes", "AFVN", "Fleuve de Vie", "culte dimanche Nantes", "Nantes Est"],
   openGraph: {
@@ -32,7 +31,9 @@ export const metadata: Metadata = {
     locale: "fr_FR",
     siteName: site.name,
     url: "/",
+    images: [{ url: "/og-afvn.jpg", width: 1200, height: 630, alt: "AFVN Nantes" }],
   },
+  twitter: { card: "summary_large_image", images: ["/og-afvn.jpg"] },
   appleWebApp: { capable: true, title: "AFVN Nantes", statusBarStyle: "black-translucent" },
   formatDetection: { telephone: true },
 };
@@ -51,7 +52,7 @@ const jsonLd = {
   alternateName: site.name,
   url: site.url,
   logo: `${site.url}/emblem-afvn.png`,
-  image: `${site.url}/opengraph-image.jpg`,
+  image: `${site.url}/og-afvn.jpg`,
   telephone: site.phone.display.replace(/\s/g, ""),
   address: {
     "@type": "PostalAddress",
@@ -90,6 +91,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <SiteFooter />
         <MobileActionBar />
         <TextSizeToggle />
+        <CookieBanner />
         <ServiceWorker />
       </body>
     </html>

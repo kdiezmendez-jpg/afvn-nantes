@@ -62,7 +62,7 @@ export function NextServicePill({ className = "" }: { className?: string }) {
         <span className={`relative inline-flex size-2.5 rounded-full ${next?.live ? "bg-red-500" : "bg-gold-400"}`} />
       </span>
       <span className="leading-tight">
-        <span className="eyebrow block !text-[0.6rem] text-white/60">{next?.live ? "En ce moment" : "Prochain culte"}</span>
+        <span className="eyebrow block !text-[0.7rem] text-white/60">{next?.live ? "En ce moment" : "Prochain culte"}</span>
         <span className="text-sm font-semibold">
           {next
             ? next.live
@@ -81,7 +81,7 @@ function splitDuration(ms: number) {
 }
 
 export function Countdown() {
-  const list = useUpcoming(1, 1000);
+  const list = useUpcoming(1, 30_000);
   const now = useNow(1000);
 
   const next = list?.[0];
@@ -107,7 +107,7 @@ export function Countdown() {
               <span className="font-display block text-3xl tabular-nums text-gold-400 sm:text-4xl">
                 {v === undefined ? "––" : String(v).padStart(2, "0")}
               </span>
-              <span className="eyebrow mt-1 block !text-[0.55rem] text-white/50">{label}</span>
+              <span className="eyebrow mt-1 block !text-[0.7rem] text-white/50">{label}</span>
             </li>
           ))}
         </ol>
@@ -142,10 +142,10 @@ export function UpcomingList({ count = 3, tone = "light" }: { count?: number; to
               }`}
             >
               <span className="font-display text-3xl leading-none">{frDayNum(o.start)}</span>
-              <span className={`eyebrow mt-1 !text-[0.55rem] ${featured ? "text-gold-400" : "text-gold-700"}`}>{frMonth(o.start)}</span>
+              <span className={`eyebrow mt-1 !text-[0.7rem] ${featured ? "text-gold-400" : "text-gold-700"}`}>{frMonth(o.start)}</span>
             </div>
             <div>
-              <p className={`eyebrow !text-[0.6rem] ${featured ? "text-gold-400" : "text-gold-700"}`}>
+              <p className={`eyebrow !text-[0.7rem] ${featured ? "text-gold-400" : "text-gold-700"}`}>
                 {o.live ? "En ce moment" : relativeDay(o.start)}
               </p>
               <p className="font-display mt-1 text-xl font-semibold leading-snug">{o.slot.title}</p>

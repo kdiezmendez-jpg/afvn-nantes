@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import { FinalCta } from "@/components/sections";
 import { DisplayTitle, Eyebrow, Gallery, Lead, PageHero } from "@/components/ui";
 import { YouTubeLite } from "@/components/youtube-lite";
 import { featuredVideos } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "Worship Sessions — Louange et adoration",
-  description: "Les Worship Sessions de l'AFVN Nantes : des moments consacrés à la louange, l'adoration et la présence de Dieu.",
-  alternates: { canonical: "/medias/worship-sessions" },
-};
+export const metadata: Metadata = pageMeta({
+  title: "Worship Sessions : louange et adoration · AFVN Nantes",
+  description: "Les Worship Sessions de l'AFVN Nantes : des soirées consacrées à la louange, à l'adoration et à la recherche de la présence de Dieu.",
+  path: "/medias/worship-sessions",
+});
 
 export default function WorshipSessionsPage() {
   return (

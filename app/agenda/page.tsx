@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import Image from "next/image";
 import Link from "next/link";
 import { Icon } from "@/components/icons";
-import { FinalCta, LiveSection } from "@/components/sections";
+import { LiveSection } from "@/components/sections";
 import { UpcomingList } from "@/components/live-schedule";
 import { Button, DisplayTitle, Eyebrow, Lead, PageHero } from "@/components/ui";
 import { events, formatTime, schedule } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "Agenda — Horaires des cultes",
-  description:
-    "Horaires des cultes de l'AFVN Nantes : culte de célébration le dimanche à 9h30, enseignement et intercession le vendredi à 19h. Prochains rendez-vous et temps forts.",
-  alternates: { canonical: "/agenda" },
-};
+export const metadata: Metadata = pageMeta({
+  title: "Horaires des cultes et agenda · AFVN Nantes",
+  description: "Culte le dimanche à 9h30, enseignement et intercession le vendredi à 19h, 69 bis rue du Bêle à Nantes. Prochains rendez-vous et temps forts.",
+  path: "/agenda",
+});
 
 export default function AgendaPage() {
   return (
@@ -63,10 +63,10 @@ export default function AgendaPage() {
           <ul className="mt-12 grid gap-6 md:grid-cols-3">
             {events.map((e) => (
               <li key={e.href}>
-                <Link href={e.href} className="group relative isolate flex aspect-[4/5] flex-col justify-end overflow-hidden p-7 text-white">
+                <Link href={e.href} className="group relative isolate flex aspect-[4/5] flex-col justify-end overflow-hidden bg-night-950 p-7 text-white">
                   <Image src={e.image} alt="" fill sizes="(min-width: 768px) 33vw, 100vw" className="-z-20 object-cover transition duration-700 group-hover:scale-105" />
                   <span className="absolute inset-0 -z-10 bg-gradient-to-t from-night-950 via-night-950/50 to-transparent" />
-                  <span className="eyebrow !text-[0.6rem] text-gold-300">{e.kicker}</span>
+                  <span className="eyebrow !text-[0.7rem] text-gold-300">{e.kicker}</span>
                   <span className="font-display mt-2 text-3xl font-semibold">{e.title}</span>
                   <span className="mt-2 text-sm text-white/80">{e.description}</span>
                   <span className="mt-4 text-sm font-semibold text-gold-300">Découvrir →</span>
@@ -77,7 +77,7 @@ export default function AgendaPage() {
               <figure className="flex h-full flex-col bg-cream">
                 <Image src="/theme-2026.jpg" alt="Thème 2026 : Gabaon, posséder les sommets des montagnes — Deutéronome 11:24" width={1672} height={941} sizes="(min-width: 768px) 33vw, 100vw" className="w-full" />
                 <figcaption className="flex flex-1 flex-col justify-center p-7">
-                  <span className="eyebrow !text-[0.6rem] text-gold-700">Thème de l&apos;année</span>
+                  <span className="eyebrow !text-[0.7rem] text-gold-700">Thème de l&apos;année</span>
                   <span className="font-display mt-2 text-3xl font-semibold">2026 · Gabaon</span>
                   <span className="mt-2 text-sm text-muted">Posséder les sommets des montagnes — Deutéronome 11:24</span>
                 </figcaption>
@@ -88,7 +88,6 @@ export default function AgendaPage() {
       </section>
 
       <LiveSection withVideos={false} />
-      <FinalCta />
     </>
   );
 }

@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import { Icon, type IconName } from "@/components/icons";
-import { FinalCta, PrayerSection } from "@/components/sections";
+import { PrayerSection } from "@/components/sections";
 import { Button, DisplayTitle, Eyebrow, Lead, PageHero } from "@/components/ui";
 import { site } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "Prière et accompagnement",
-  description:
-    "Besoin de prière ou d'écoute ? L'équipe pastorale de l'AFVN Nantes prie avec vous et vous accompagne en toute confidentialité.",
-  alternates: { canonical: "/priere" },
-};
+export const metadata: Metadata = pageMeta({
+  title: "Demande de prière et accompagnement · AFVN Nantes",
+  description: "Besoin de prière ou d'écoute ? L'équipe pastorale de l'AFVN Nantes prie avec vous et vous accompagne, en toute confidentialité.",
+  path: "/priere",
+});
 
 const support: { t: string; d: string; icon: IconName }[] = [
   { t: "Accompagnement pastoral", d: "Un temps d'écoute et de prière avec le pasteur ou un responsable.", icon: "hands" },
@@ -28,7 +28,7 @@ export default function PrierePage() {
       >
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Button href={site.phone.href}>
-            <Icon name="phone" className="size-4" /> {site.phone.display}
+            <Icon name="phone" className="size-4" /> Appeler l&apos;équipe de prière
           </Button>
           <Button href="/nous-rejoindre" variant="ghost-dark">
             Être accompagné(e)
@@ -55,7 +55,6 @@ export default function PrierePage() {
         </div>
       </section>
 
-      <FinalCta />
     </>
   );
 }

@@ -25,6 +25,7 @@ Presque tout se modifie dans **`lib/site.ts`** :
 | Rendez-vous hebdomadaires (compte à rebours, agenda, rappel .ics, Google) | `schedule` |
 | Ministères, ADN, événements, vidéos, galerie, FAQ, mot du pasteur | `ministries`, `dna`, `events`, `featuredVideos`, `gallery`, `faq`, `pastorQuote` |
 | Couleurs et typographies | `app/globals.css` (`@theme`) |
+| Mentions légales, éditeur, e-mail de contact, durée de conservation | `lib/legal.ts` (les champs vides s'affichent « à compléter ») |
 
 Variable d'environnement à définir en production : `NEXT_PUBLIC_SITE_URL` (ex. `https://www.afvn-nantes.fr`).
 
@@ -32,6 +33,15 @@ Variable d'environnement à définir en production : `NEXT_PUBLIC_SITE_URL` (ex.
 
 - `app/manifest.ts` : nom, couleurs et icônes de l'appli.
 - `public/sw.js` : consultation hors ligne (page `/hors-ligne` en secours). Changer `VERSION` pour forcer la mise à jour du cache.
+
+## Cookies, confidentialité et mesure d'audience
+
+- Bandeau de consentement conforme CNIL (`components/cookie-banner.tsx`) : rien n'est chargé avant le choix ;
+  « Tout refuser » et « Tout accepter » au même niveau ; choix conservé 6 mois ; lien « Gérer les cookies » dans le pied de page.
+- Vidéos YouTube et carte Google Maps chargées seulement avec accord (`youtube-lite.tsx`, `map-embed.tsx`).
+- Mesure d'audience : Vercel Web Analytics, sans cookie, activée seulement après accord.
+  **À activer une fois dans Vercel : projet → onglet Analytics → Enable.**
+- Pages légales : `/mentions-legales`, `/confidentialite`, `/conditions`.
 
 ## Sécurité
 

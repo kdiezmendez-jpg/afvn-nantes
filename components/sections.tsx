@@ -97,15 +97,15 @@ export function LiveSection({ withVideos = true }: { withVideos?: boolean }) {
           <div className="mt-8 flex items-center gap-4 border-y border-white/10 py-5">
             <Icon name="clock" className="size-6 text-gold-400" />
             <div>
-              <p className="eyebrow !text-[0.6rem] text-white/50">Rendez-vous</p>
+              <p className="eyebrow !text-[0.7rem] text-white/50">Rendez-vous</p>
               <p className="font-semibold">
                 {sunday.day} · {formatTime(sunday.start)} — {formatTime(sunday.end)}
               </p>
             </div>
           </div>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Button href="/rappel-culte.ics" download>
-              <Icon name="bell" className="size-4" /> Ajouter à mon agenda
+            <Button href="/rappel-culte.ics" download variant="ghost-dark">
+              <Icon name="bell" className="size-4" /> Ajouter les cultes à mon agenda
             </Button>
             <Button href={site.socials.youtube} external variant="ghost-dark">
               S&apos;abonner sur YouTube
@@ -129,7 +129,7 @@ export function LiveSection({ withVideos = true }: { withVideos?: boolean }) {
               <figure key={v.id}>
                 <YouTubeLite id={v.id} title={v.title} />
                 <figcaption className="mt-4">
-                  <span className="eyebrow !text-[0.6rem] text-gold-400">{v.kind}</span>
+                  <span className="eyebrow !text-[0.7rem] text-gold-400">{v.kind}</span>
                   <span className="font-display mt-1 block text-xl">{v.title}</span>
                 </figcaption>
               </figure>
@@ -142,7 +142,7 @@ export function LiveSection({ withVideos = true }: { withVideos?: boolean }) {
 }
 
 /* ───────── CESA : accueil des nouveaux venus (QR code) ───────── */
-export async function CesaSection() {
+export async function CesaSection({ primary = false }: { primary?: boolean }) {
   const qr = await QRCode.toString(site.welcomeForm, {
     type: "svg",
     errorCorrectionLevel: "M",
@@ -175,8 +175,8 @@ export async function CesaSection() {
               </p>
             </div>
             <div className="mt-8">
-              <Button href={site.welcomeForm} external>
-                M&apos;enregistrer maintenant →
+              <Button href={site.welcomeForm} external variant={primary ? "gold" : "ghost-dark"}>
+                Remplir le formulaire d&apos;accueil (2 min) →
               </Button>
             </div>
           </div>
@@ -184,13 +184,13 @@ export async function CesaSection() {
             <div className="mx-auto w-52 rounded-xl border-[10px] border-cream p-2" role="img" aria-label="QR code du formulaire d'accueil">
               <div className="[&>svg]:h-auto [&>svg]:w-full" dangerouslySetInnerHTML={{ __html: qr }} />
             </div>
-            <p className="eyebrow mt-6 !text-[0.6rem] text-gold-700">Scannez pour vous enregistrer</p>
+            <p className="eyebrow mt-6 !text-[0.7rem] text-gold-700">Scannez pour vous enregistrer</p>
             <p className="font-display mt-2 text-2xl font-semibold">Bienvenue à l&apos;AFVN Nantes</p>
             <a
               href={site.welcomeForm}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-5 inline-flex rounded-full bg-gold-400 px-6 py-3 text-sm font-semibold text-night-950 hover:bg-gold-300"
+              className="mt-5 inline-flex min-h-11 items-center rounded-full border border-ink/25 px-6 text-sm font-semibold text-ink hover:border-gold-600 hover:text-gold-700"
             >
               Ouvrir le formulaire
             </a>
@@ -237,11 +237,11 @@ export function PrayerSection() {
             <p className="mt-3 text-sm text-white/60">Une équipe bienveillante vous accompagne dans la foi.</p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               {hasForm ? (
-                <Button href={site.prayerForm} external>
+                <Button href={site.prayerForm} external variant="ghost-dark">
                   Déposer une demande de prière →
                 </Button>
               ) : null}
-              <Button href={site.phone.href} variant={hasForm ? "ghost-dark" : "gold"}>
+              <Button href={site.phone.href} variant="ghost-dark">
                 <Icon name="phone" className="size-4" /> Appeler pour prier ensemble
               </Button>
             </div>
@@ -341,14 +341,14 @@ export function FinalCta() {
       ))}
       <p className="eyebrow text-night-950/70">Venez comme vous êtes</p>
       <h2 className="font-display mx-auto mt-5 max-w-3xl text-5xl font-semibold leading-[1.02] text-night-950 md:text-7xl">
-        Il y a une place <em className="font-medium italic text-cream">pour vous.</em>
+        Il y a une place <em className="font-medium italic text-night-700">pour vous.</em>
       </h2>
       <p className="mx-auto mt-6 max-w-xl text-lg leading-8 text-night-950/75">
         Découvrez une famille, une foi vivante et un lieu où votre histoire peut prendre un nouveau départ.
       </p>
       <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
         <Button href="/nous-rejoindre" variant="night">
-          ✦ Préparer ma visite
+          ✦ Préparer ma première visite
         </Button>
         <a
           href={site.mapsUrl}

@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import { LiveSection } from "@/components/sections";
 import { Button, DisplayTitle, Eyebrow, Gallery, Lead, PageHero } from "@/components/ui";
 import { gallery, site } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "Prédications, live et vidéos",
-  description:
-    "Suivez le culte de l'AFVN Nantes en direct chaque dimanche à 9h30, retrouvez les prédications, enseignements et temps de louange en vidéo.",
-  alternates: { canonical: "/predications" },
-};
+export const metadata: Metadata = pageMeta({
+  title: "Prédications, live et vidéos · AFVN Nantes",
+  description: "Suivez le culte de l'AFVN Nantes en direct le dimanche à 9h30 et retrouvez prédications, enseignements et temps de louange en vidéo.",
+  path: "/predications",
+});
 
 export default function PredicationsPage() {
   return (
@@ -21,7 +21,7 @@ export default function PredicationsPage() {
       >
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Button href={site.liveUrl} external>
-            ● Suivre le direct
+            ● Regarder le direct sur YouTube
           </Button>
           <Button href={site.socials.youtube} external variant="ghost-dark">
             Toute la chaîne YouTube

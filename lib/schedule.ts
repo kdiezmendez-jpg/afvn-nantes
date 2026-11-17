@@ -9,8 +9,8 @@ type Slot = (typeof schedule)[number];
 
 export type Occurrence = { slot: Slot; start: Date; end: Date; live: boolean };
 
-function parisParts(d: Date) {
-  const parts = new Intl.DateTimeFormat("en-GB", {
+// Formateurs créés une seule fois (leur création coûte cher).
+const partsFormatter = new Intl.DateTimeFormat("en-GB", {
     timeZone: TZ,
     year: "numeric",
     month: "2-digit",
@@ -20,7 +20,10 @@ function parisParts(d: Date) {
     minute: "2-digit",
     second: "2-digit",
     hourCycle: "h23",
-  }).formatToParts(d);
+  });
+
+function parisParts(d: Date) {
+  const parts = partsFormatter.formatToParts(d);
   const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "0";
   return {
     y: Number(get("year")),
@@ -63,10 +66,12 @@ export function upcoming(count: number, from = new Date()): Occurrence[] {
   return out.sort((a, b) => a.start.getTime() - b.start.getTime()).slice(0, count);
 }
 
-export const frDay = (d: Date) => new Intl.DateTimeFormat("fr-FR", { weekday: "long", timeZone: TZ }).format(d);
-export const frDayNum = (d: Date) => new Intl.DateTimeFormat("fr-FR", { day: "numeric", timeZone: TZ }).format(d);
-export const frMonth = (d: Date) =>
-  new Intl.DateTimeFormat("fr-FR", { month: "short", timeZone: TZ }).format(d).replace(".", "");
+const fDay = new Intl.DateTimeFormat("fr-FR", { weekday: "long", timeZone: TZ });
+const fNum = new Intl.DateTimeFormat("fr-FR", { day: "numeric", timeZone: TZ });
+const fMonth = new Intl.DateTimeFormat("fr-FR", { month: "short", timeZone: TZ });
+export const frDay = (d: Date) => fDay.format(d);
+export const frDayNum = (d: Date) => fNum.format(d);
+export const frMonth = (d: Date) => fMonth.format(d).replace(".", "");
 
 export function relativeDay(d: Date, from = new Date()) {
   const a = parisParts(d);

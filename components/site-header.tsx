@@ -49,13 +49,13 @@ export function SiteHeader() {
         Aller au contenu
       </a>
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-4 px-5 md:px-8">
-        <Link href="/" className="flex shrink-0 items-center gap-3" aria-label={`${site.name} — accueil`}>
+        <Link href="/" className="flex shrink-0 items-center gap-3">
           <span className="grid size-12 place-items-center rounded-xl bg-white p-1 shadow-md">
             <Image src="/emblem-afvn.png" alt="" width={44} height={44} priority className="size-10 rounded-full" />
           </span>
           <span className="leading-tight text-white">
             <span className="font-display block text-[1.05rem] font-semibold">Assemblées Fleuve de Vie</span>
-            <span className="block text-[0.65rem] uppercase tracking-[0.2em] text-white/60">pour les Nations · Nantes</span>
+            <span className="block text-[0.7rem] uppercase tracking-[0.2em] text-white/60">pour les Nations · Nantes</span>
           </span>
         </Link>
 

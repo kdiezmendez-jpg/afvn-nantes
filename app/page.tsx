@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import Image from "next/image";
 import Link from "next/link";
 import { Icon, type IconName } from "@/components/icons";
@@ -8,9 +9,11 @@ import { Marquee } from "@/components/site-footer";
 import { ArrowLink, Button, DisplayTitle, Eyebrow, Lead } from "@/components/ui";
 import { announcement, faq, gallery, pastorQuote, site } from "@/lib/site";
 
-export const metadata: Metadata = {
-  alternates: { canonical: "/" },
-};
+export const metadata: Metadata = pageMeta({
+  title: "AFVN Nantes — Église évangélique à Nantes",
+  description: "Église évangélique à Nantes : culte le dimanche à 9h30, enseignement et prière le vendredi à 19h. Une famille où la Parole et l'Esprit s'accordent.",
+  path: "/",
+});
 
 const faqJsonLd = {
   "@context": "https://schema.org",
@@ -39,7 +42,7 @@ function Orbit() {
       </div>
       <div className="absolute inset-0 grid place-items-center text-center">
         <div>
-          <p className="eyebrow !text-[0.6rem] text-white/50">AFVN Nantes</p>
+          <p className="eyebrow !text-[0.7rem] text-white/50">AFVN Nantes</p>
           <p className="font-display text-6xl font-semibold text-white md:text-7xl">VIE</p>
           <p className="text-gold-400">✦</p>
         </div>
@@ -75,7 +78,10 @@ export default function Home() {
               Une église où la Parole et l&apos;Esprit s&apos;accordent pour engendrer <strong className="text-white">les porteurs de vie.</strong>
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-5">
-              <Button href="/notre-eglise">Découvrir notre vision ↘</Button>
+              <Button href="/nous-rejoindre">Préparer ma première visite</Button>
+              <Link href="/notre-eglise" className="inline-flex min-h-11 items-center text-sm font-semibold underline decoration-gold-400 underline-offset-4 hover:text-gold-300">
+                Notre vision
+              </Link>
               <Link href="/predications" className="group inline-flex items-center gap-3 text-sm font-semibold">
                 <span className="grid size-12 place-items-center rounded-full border border-white/30 transition group-hover:border-gold-400 group-hover:text-gold-300">
                   <Icon name="play" className="ml-0.5 size-4" />
@@ -87,7 +93,7 @@ export default function Home() {
           <div className="relative pb-6 lg:pb-24">
             <Orbit />
             <figure className="relative z-10 -mt-10 max-w-xs border-l-4 border-gold-400 bg-cream p-6 text-ink shadow-2xl sm:absolute sm:bottom-0 sm:left-0 sm:mt-0 lg:-left-16">
-              <p className="eyebrow !text-[0.6rem] text-gold-700">Jean 10:10</p>
+              <p className="eyebrow !text-[0.7rem] text-gold-700">Jean 10:10</p>
               <blockquote className="font-display mt-2 text-lg leading-snug">
                 « Je suis venu afin que les brebis aient la vie, et qu&apos;elles soient dans l&apos;abondance. »
               </blockquote>
@@ -105,7 +111,7 @@ export default function Home() {
             className="mx-auto flex max-w-7xl flex-col gap-3 bg-gold-400 px-7 py-5 text-night-950 transition hover:bg-gold-300 md:flex-row md:items-center md:justify-between"
           >
             <span>
-              <span className="eyebrow block !text-[0.6rem]">Annonce à la une</span>
+              <span className="eyebrow block !text-[0.7rem]">Annonce à la une</span>
               <span className="font-display text-xl font-semibold">{announcement.title}</span>
             </span>
             <span className="text-sm md:max-w-md">{announcement.text}</span>
@@ -132,8 +138,8 @@ export default function Home() {
           <Link href="/nous-rejoindre" className="group relative isolate flex min-h-64 flex-col justify-end overflow-hidden bg-night-900 p-7 text-white">
             <Image src="/eglise/IMG_2766.jpg" alt="" fill sizes="(min-width: 1024px) 33vw, 100vw" className="-z-20 object-cover opacity-60 transition duration-700 group-hover:scale-105" />
             <span className="absolute inset-0 -z-10 bg-gradient-to-t from-night-950 via-night-950/40 to-transparent" />
-            <span className="eyebrow absolute left-5 top-5 bg-night-950/80 px-3 py-1.5 !text-[0.6rem]">Bienvenue</span>
-            <span className="eyebrow !text-[0.6rem] text-gold-400">AFVN Nantes</span>
+            <span className="eyebrow absolute left-5 top-5 bg-night-950/80 px-3 py-1.5 !text-[0.7rem]">Bienvenue</span>
+            <span className="eyebrow !text-[0.7rem] text-gold-400">AFVN Nantes</span>
             <span className="font-display mt-1 text-2xl font-semibold">Bienvenue dans la famille</span>
             <span className="mt-1 text-sm text-white/70">Ce qui vous attend lors de votre première visite →</span>
           </Link>
@@ -163,8 +169,8 @@ export default function Home() {
       <section className="bg-white px-5 py-20 md:px-8 md:py-28">
         <div className="mx-auto grid max-w-7xl items-center gap-14 lg:grid-cols-[auto_1.4fr_1fr]">
           <p className="font-display hidden border-r border-ink/10 pr-10 text-7xl leading-[0.85] lg:block" aria-hidden>
-            <span className="block text-ink/15">20</span>
-            <span className="block text-gold-400">26</span>
+            <span className="block text-ink/15 before:content-['20']" />
+            <span className="block text-gold-400 before:content-['26']" />
           </p>
           <div>
             <Eyebrow>Notre église</Eyebrow>
@@ -183,10 +189,8 @@ export default function Home() {
             </ul>
           </div>
           <figure className="relative overflow-hidden bg-night-950 p-10 text-white">
-            <span className="font-display absolute -right-4 -top-6 text-8xl text-white/[0.04]" aria-hidden>
-              AFVN
-            </span>
-            <p className="eyebrow !text-[0.6rem] text-gold-400">Le mot du pasteur</p>
+            <span className="font-display absolute -right-4 -top-6 text-8xl text-white/[0.04] before:content-['AFVN']" aria-hidden />
+            <p className="eyebrow !text-[0.7rem] text-gold-400">Le mot du pasteur</p>
             <blockquote className="font-display mt-5 text-2xl leading-snug">« {pastorQuote} »</blockquote>
             <figcaption className="mt-6 flex items-center gap-3">
               <Image src="/pasteur-diez.jpg" alt="" width={96} height={96} className="size-12 rounded-full object-cover" />

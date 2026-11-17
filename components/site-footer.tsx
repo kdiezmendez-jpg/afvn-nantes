@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { formatTime, nav, schedule, site } from "@/lib/site";
+import { ManageCookiesButton } from "./cookie-banner";
 import { SocialLinks } from "./social-links";
 
 const words = ["Grandir ensemble", "Porter la vie", "Jésus au centre", "Une famille pour tous"];
@@ -75,11 +76,30 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="border-t border-white/10">
-        <div className="mx-auto flex max-w-7xl flex-col gap-2 px-5 py-6 text-xs text-white/45 md:flex-row md:justify-between md:px-8">
+        <div className="mx-auto flex max-w-7xl flex-col gap-2 px-5 py-6 text-xs text-white/70 md:flex-row md:justify-between md:px-8">
           <p>
             © {new Date().getFullYear()} {site.fullName}
           </p>
-          <p>Fait avec soin à Nantes · Installez le site comme une appli sur votre téléphone</p>
+          <ul className="flex flex-wrap gap-x-5 gap-y-2">
+            <li>
+              <Link href="/mentions-legales" className="hover:text-gold-300 hover:underline">
+                Mentions légales
+              </Link>
+            </li>
+            <li>
+              <Link href="/confidentialite" className="hover:text-gold-300 hover:underline">
+                Confidentialité
+              </Link>
+            </li>
+            <li>
+              <Link href="/conditions" className="hover:text-gold-300 hover:underline">
+                Conditions d&apos;utilisation
+              </Link>
+            </li>
+            <li>
+              <ManageCookiesButton />
+            </li>
+          </ul>
         </div>
       </div>
     </footer>

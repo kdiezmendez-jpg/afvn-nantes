@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
+import { pageMeta } from "@/lib/seo";
 import Image from "next/image";
-import { CesaSection, FinalCta } from "@/components/sections";
+import { MapEmbed } from "@/components/map-embed";
+import { CesaSection } from "@/components/sections";
 import { Button, DisplayTitle, Eyebrow, Lead, PageHero } from "@/components/ui";
 import { faq, formatTime, schedule, site } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "Je suis nouveau — Préparer ma visite",
-  description:
-    "Première visite à l'AFVN Nantes ? Horaires, adresse, déroulement du culte et formulaire d'accueil CESA pour faire connaissance.",
-  alternates: { canonical: "/nous-rejoindre" },
-};
+export const metadata: Metadata = pageMeta({
+  title: "Première visite : je suis nouveau · AFVN Nantes",
+  description: "Première visite à l'AFVN Nantes ? Horaires, adresse, déroulement du culte et formulaire d'accueil pour faire connaissance avec l'équipe.",
+  path: "/nous-rejoindre",
+});
 
 const expect = [
   { t: "Un accueil personnel", d: "L'équipe CESA vous reçoit, vous présente l'église et répond à vos questions." },
@@ -29,7 +30,7 @@ export default function NousRejoindrePage() {
       >
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Button href={site.welcomeForm} external>
-            Remplir le formulaire d&apos;accueil
+            Remplir le formulaire d&apos;accueil (2 min)
           </Button>
           <Button href={site.mapsUrl} external variant="ghost-dark">
             Itinéraire
@@ -45,7 +46,7 @@ export default function NousRejoindrePage() {
             <ol className="mt-10 space-y-8">
               {expect.map((e, i) => (
                 <li key={e.t} className="flex gap-5">
-                  <span className="font-display text-4xl text-gold-500">0{i + 1}</span>
+                  <span className="font-display text-4xl text-gold-700">0{i + 1}</span>
                   <span>
                     <span className="font-display block text-2xl font-semibold">{e.t}</span>
                     <span className="mt-1 block text-muted">{e.d}</span>
@@ -81,13 +82,13 @@ export default function NousRejoindrePage() {
               </div>
             </dl>
             <div className="mt-8 overflow-hidden rounded-xl">
-              <iframe src={site.mapsEmbed} title="Plan d'accès à l'AFVN Nantes" loading="lazy" referrerPolicy="no-referrer-when-downgrade" className="h-64 w-full" />
+              <MapEmbed />
             </div>
           </div>
         </div>
       </section>
 
-      <CesaSection />
+      <CesaSection primary />
 
       <section className="bg-white px-5 py-20 md:px-8">
         <div className="mx-auto max-w-6xl">
@@ -103,7 +104,6 @@ export default function NousRejoindrePage() {
         </div>
       </section>
 
-      <FinalCta />
     </>
   );
 }
