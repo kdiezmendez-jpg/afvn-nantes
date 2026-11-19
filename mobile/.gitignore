@@ -40,5 +40,6 @@ example
 
 # generated native folders
 /ios
-/android
+# /android : versionné pour pouvoir ouvrir le projet dans Android Studio.
+# Après une modification de app.json : npx expo prebuild --clean --platform android
 .env
