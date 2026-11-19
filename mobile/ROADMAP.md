@@ -35,9 +35,15 @@ Chaque étape est livrée testée (règles de sécurité + parcours complet) ava
 - Tableau de suivi de la progression des serviteurs pour les formateurs.
 - 91 tests de règles Firestore, 8 tests de règles Storage (exécutés sur GitHub), 19 tests des fonctions serveur.
 
-## Étape 4 b — Appel vidéo en petit groupe
-- Appel vidéo direct entre téléphones (WebRTC, jusqu'à 5–6 personnes), signalisation par Firebase, gratuit.
-- Nécessite une version de développement de l'appli (`npx expo run:android`).
+## ✅ Étape 4 b — Appel vidéo en petit groupe (livrée)
+- Appel vidéo direct entre téléphones (WebRTC en maillage, **6 personnes maximum**), sans serveur vidéo ni abonnement :
+  Firebase transmet seulement les informations de connexion ; rien n'est enregistré.
+- Micro, caméra, changement de caméra, départ ; présence des participants rafraîchie toutes les 15 s.
+- Réservé aux serviteurs, uniquement sur les sessions « petit groupe » (règles + 9 tests).
+- Testé dans le navigateur à 3 participants avec caméras simulées : chacun reçoit les 2 autres vidéos.
+- Relais réseau facultatif (TURN) pour les réseaux très fermés : variables `EXPO_PUBLIC_TURN_URL`,
+  `EXPO_PUBLIC_TURN_USERNAME`, `EXPO_PUBLIC_TURN_CREDENTIAL` (des offres gratuites existent).
+- Nécessite une **version de développement** : `npx expo run:android` (Android Studio) ; ne fonctionne pas dans Expo Go.
 
 ## ✅ Étape 5 — Ministères, groupes, annuaire & messagerie (livrée)
 - Ministères (créés en un geste à partir de ceux du site), adhésion libre, **discussion de groupe** réservée aux membres.

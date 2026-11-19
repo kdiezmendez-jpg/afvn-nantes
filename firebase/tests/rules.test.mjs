@@ -196,6 +196,20 @@ await check("Signalement : un membre ne lit pas les signalements", assertFails(g
 await check("Signalement : l'administrateur les lit", assertSucceeds(getDoc(doc(admin, "reports/r1"))));
 await check("Modération : un membre suspendu perd l'accès", assertSucceeds(env.withSecurityRulesDisabled(async (ctx) => { await updateDoc(doc(ctx.firestore(), "users/hidden"), { status: "suspended" }); })).then(() => assertFails(getDoc(doc(as("hidden", "h@x.fr"), "news/n1")))));
 
+// ——— Étape 4 b : appel vidéo en petit groupe ———
+await setDoc(doc(trainer, "trainingSessions/g1"), sess({ kind: "group", youtubeUrl: null, title: "Révision en petit groupe" }));
+const part = (uid) => ({ uid, name: "Luc S", updatedAt: serverTimestamp() });
+await check("Appel : un serviteur rejoint l'appel", assertSucceeds(setDoc(doc(servant, "trainingSessions/g1/participants/servant"), part("servant"))));
+await check("Appel : impossible de rejoindre au nom d'un autre", assertFails(setDoc(doc(servant, "trainingSessions/g1/participants/trainer"), part("trainer"))));
+await check("Appel : un simple membre ne rejoint pas", assertFails(setDoc(doc(paul, "trainingSessions/g1/participants/visible"), part("visible"))));
+await check("Appel : pas d'appel sur une session « direct »", assertFails(setDoc(doc(servant, "trainingSessions/s1/participants/servant"), part("servant"))));
+const sig = (from, to, extra = {}) => ({ from, to, type: "offer", payload: "{}", createdAt: serverTimestamp(), ...extra });
+await check("Appel : envoyer une offre de connexion", assertSucceeds(setDoc(doc(servant, "trainingSessions/g1/signals/x1"), sig("servant", "trainer"))));
+await check("Appel : le destinataire la lit", assertSucceeds(getDoc(doc(trainer, "trainingSessions/g1/signals/x1"))));
+await check("Appel : un tiers ne la lit pas", assertFails(getDoc(doc(ruth, "trainingSessions/g1/signals/x1"))));
+await check("Appel : impossible d'usurper l'expéditeur", assertFails(setDoc(doc(servant, "trainingSessions/g1/signals/x2"), sig("trainer", "interc"))));
+await check("Appel : le destinataire supprime le message traité", assertSucceeds(deleteDoc(doc(trainer, "trainingSessions/g1/signals/x1"))));
+
 for (const [s, n] of results) console.log(s, n);
 await env.cleanup();
 process.exit(results.some(([s]) => s !== "OK  ") ? 1 : 0);

@@ -31,14 +31,15 @@
         "backgroundColor": "#03141f"
       },
       "permissions": [
-        "android.permission.POST_NOTIFICATIONS"
+        "android.permission.CAMERA",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.RECORD_AUDIO"
       ],
       "blockedPermissions": [
         "android.permission.SYSTEM_ALERT_WINDOW",
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.RECORD_AUDIO",
-        "android.permission.CAMERA",
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.ACCESS_COARSE_LOCATION"
       ],
@@ -64,6 +65,13 @@
         {
           "enableRemoteNotifications": true,
           "color": "#efb54a"
+        }
+      ],
+      [
+        "@config-plugins/react-native-webrtc",
+        {
+          "cameraPermission": "La cam\u00e9ra est utilis\u00e9e pour les appels vid\u00e9o de formation en petit groupe, uniquement pendant l'appel.",
+          "microphonePermission": "Le micro est utilis\u00e9 pour les appels de formation en petit groupe, uniquement pendant l'appel."
         }
       ]
     ],

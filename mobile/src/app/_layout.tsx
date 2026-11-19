@@ -74,6 +74,7 @@ export default function RootLayout() {
         <Stack.Screen name="formation/session/[id]" options={{ title: "Session" }} />
         <Stack.Screen name="formation/nouvelle-session" options={{ title: "Nouvelle session", presentation: "modal" }} />
         <Stack.Screen name="formation/suivi" options={{ title: "Suivi" }} />
+        <Stack.Screen name="formation/appel/[id]" options={{ title: "Appel" }} />
         <Stack.Screen name="ministeres/index" options={{ title: "Ministères" }} />
         <Stack.Screen name="ministeres/[id]" options={{ title: "Ministère" }} />
         <Stack.Screen name="annuaire" options={{ title: "Annuaire" }} />

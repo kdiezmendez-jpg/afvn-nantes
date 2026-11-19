@@ -1,5 +1,5 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { Stack, router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { Field, FormMessage } from "@/components/form";
@@ -68,7 +68,8 @@ function Content({ member }: { member: Member }) {
           <Card tone="dark">
             <Ionicons name="people-outline" size={26} color={colors.gold400} />
             <Text style={styles.liveTitle}>Appel en petit groupe</Text>
-            <Text style={styles.liveText}>L&apos;appel vidéo intégré (jusqu&apos;à 6 personnes) arrive avec la prochaine mise à jour de l&apos;application.</Text>
+            <Text style={styles.liveText}>Appel vidéo direct entre les téléphones, jusqu&apos;à 6 personnes. Rien n&apos;est enregistré.</Text>
+            <Btn label="Rejoindre l'appel" icon="videocam-outline" onPress={() => router.push({ pathname: "/formation/appel/[id]", params: { id: s.id } })} style={{ marginTop: 14 }} />
           </Card>
         )}
         {trainer && s.kind === "live" ? (
