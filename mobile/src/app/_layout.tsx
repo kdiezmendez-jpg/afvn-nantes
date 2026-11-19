@@ -60,6 +60,10 @@ export default function RootLayout() {
         <Stack.Screen name="mot-de-passe" options={{ title: "Mot de passe oublié" }} />
         <Stack.Screen name="compte" options={{ title: "Mon compte" }} />
         <Stack.Screen name="admin/membres" options={{ title: "Membres" }} />
+        <Stack.Screen name="prieres/index" options={{ title: "Mes prières" }} />
+        <Stack.Screen name="prieres/equipe" options={{ title: "Équipe de prière" }} />
+        <Stack.Screen name="actualites/index" options={{ title: "Actualités" }} />
+        <Stack.Screen name="actualites/nouvelle" options={{ title: "Publier", presentation: "modal" }} />
       </Stack>
     </AuthProvider>
   );

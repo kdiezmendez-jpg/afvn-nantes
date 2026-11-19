@@ -9,9 +9,13 @@ Chaque étape est livrée testée (règles de sécurité + parcours complet) ava
 - Mon compte : profil, visibilité dans l'annuaire, déconnexion, **suppression du compte**.
 - Règles Firestore : 20 tests automatiques (impossible de s'auto-valider, de s'attribuer un rôle, de lire les autres profils…).
 
-## Étape 2 — Prière & actualités
-- Demandes de prière privées (visibles par l'équipe de prière seulement), anonymat possible, suivi « on prie pour vous ».
-- Fil d'actualités publié par les responsables, avec **notifications push** (Cloud Functions + Expo Push).
+## ✅ Étape 2 — Prière & actualités (livrée)
+- Demandes de prière privées, visibles par leur auteur et l'**équipe de prière** (nouveau rôle Intercesseur) ; anonymat possible.
+- L'équipe indique « je prie » ; l'auteur voit en direct combien de personnes prient et peut témoigner de l'exaucement.
+- Fil d'actualités publié par les responsables (épinglage, réservé aux serviteurs ou à tous).
+- **Notifications push** (Cloud Functions + Expo Push) : compte validé, nouvelle actualité, nouvelle demande
+  (à l'équipe, sans jamais le contenu), « on prie pour vous ». Appareils désinstallés nettoyés automatiquement.
+- 46 tests de règles de sécurité + 10 tests de notifications + parcours complet testé dans le navigateur.
 
 ## Étape 3 — Événements & baptême
 - Inscriptions aux événements (ESCHATOS, séminaires, Worship Sessions), confirmation, rappel.
@@ -27,9 +31,9 @@ Chaque étape est livrée testée (règles de sécurité + parcours complet) ava
 - Annuaire des membres (avec leur accord) et messagerie privée.
 - Modération exigée par les stores : signaler / bloquer, charte d'échange, suppression des contenus abusifs.
 
-## Visioconférence : options
-| Option | Où sont les données | Coût indicatif | Remarques |
-|---|---|---|---|
-| **Jitsi auto-hébergé** (serveur à Paris, ex. OVH) | Chez l'église | 15–30 €/mois | Libre, « tout chez nous », intégré dans l'appli ; maintenance du serveur |
-| LiveKit Cloud | Hébergeur européen | Gratuit au début, puis à l'usage | Très bonne qualité, intégration simple |
-| Lien Google Meet / Zoom | Chez Google / Zoom | Gratuit | Ouvre une autre appli, pas « en interne » |
+## Visioconférence : solution retenue (gratuite, sans Zoom ni Meet)
+- **Petits groupes (jusqu'à 5–6 personnes)** : appel vidéo direct entre téléphones (WebRTC) dans l'appli ;
+  Firebase sert seulement à mettre les participants en relation. Nécessite une version de développement
+  (`npx expo run:android` avec Android Studio).
+- **Grandes sessions** : direct YouTube « non répertorié » dont le lien n'apparaît que dans l'appli pour les serviteurs,
+  avec un fil de questions intégré que le formateur suit en direct.

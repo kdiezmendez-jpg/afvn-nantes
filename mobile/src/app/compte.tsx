@@ -6,6 +6,7 @@ import { Field, FormMessage } from "@/components/form";
 import { Body, Btn, Card, Eyebrow, Screen, Section, Title } from "@/components/ui";
 import { authError, deleteAccount, logout, useAuth } from "@/lib/auth";
 import { roleLabels, updateOwnProfile } from "@/lib/members";
+import { disablePush } from "@/lib/push";
 import { colors, fonts, space } from "@/lib/theme";
 
 export default function Compte() {
@@ -84,7 +85,7 @@ export default function Compte() {
       ) : null}
 
       <Section>
-        <Btn label="Se déconnecter" variant="secondary" icon="log-out-outline" onPress={() => logout().then(() => router.replace("/espace"))} />
+        <Btn label="Se déconnecter" variant="secondary" icon="log-out-outline" onPress={() => disablePush(user.uid).then(logout).then(() => router.replace("/espace"))} />
       </Section>
 
       <Section>

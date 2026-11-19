@@ -21,6 +21,20 @@ service cloud.firestore {
     function isAdmin() {
       return isActive() && 'admin' in profile().roles;
     }
+    // Équipe de prière : intercesseurs, responsables et administrateurs
+    function isPrayerTeam() {
+      return isActive() && profile().roles.hasAny(['intercessor', 'leader', 'admin']);
+    }
+    // Responsables : publient les actualités
+    function isLeader() {
+      return isActive() && profile().roles.hasAny(['leader', 'admin']);
+    }
+    function isServant() {
+      return isActive() && profile().roles.hasAny(['servant', 'intercessor', 'leader', 'admin']);
+    }
+    function onlyChanged(keys) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
+    }
     function validName(v) {
       return v is string && v.size() >= 1 && v.size() <= 60;
     }
@@ -60,12 +74,88 @@ service cloud.firestore {
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'roles', 'reviewedAt'])
           && request.resource.data.status in ['pending', 'active', 'rejected', 'suspended']
           && request.resource.data.roles is list
-          && request.resource.data.roles.hasOnly(['member', 'servant', 'leader', 'admin'])
+          && request.resource.data.roles.hasOnly(['member', 'servant', 'intercessor', 'leader', 'admin'])
           && 'member' in request.resource.data.roles)
       );
 
       // Suppression du compte par son titulaire (droit à l'effacement) ou par un administrateur.
       allow delete: if signedIn() && (request.auth.uid == uid || isAdmin());
+    }
+
+    // Appareils du membre (jetons de notification) : lui seul peut les écrire.
+    // Les notifications sont envoyées par les Cloud Functions (accès serveur).
+    match /users/{uid}/devices/{token} {
+      allow read, delete: if signedIn() && request.auth.uid == uid;
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['token', 'platform', 'updatedAt'])
+        && request.resource.data.token == token
+        && request.resource.data.token is string && request.resource.data.token.size() < 300
+        && request.resource.data.platform in ['ios', 'android']
+        && request.resource.data.updatedAt == request.time;
+    }
+
+    // ——— Demandes de prière ———
+    // Visibles uniquement par leur auteur et l'équipe de prière.
+    match /prayers/{id} {
+      allow read: if signedIn() && (resource.data.uid == request.auth.uid || isPrayerTeam());
+
+      allow create: if isActive()
+        && request.resource.data.keys().hasOnly(['uid', 'authorName', 'anonymous', 'text', 'status', 'prayedBy', 'createdAt', 'updatedAt'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.anonymous is bool
+        && (request.resource.data.anonymous
+              ? request.resource.data.authorName == null
+              : request.resource.data.authorName is string && request.resource.data.authorName.size() <= 130)
+        && request.resource.data.text is string
+        && request.resource.data.text.size() >= 3 && request.resource.data.text.size() <= 1500
+        && request.resource.data.status == 'received'
+        && request.resource.data.prayedBy == []
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+
+      allow update: if signedIn() && (
+        // L'équipe : « je prie » (ajoute uniquement son propre identifiant) et suivi du statut
+        (isPrayerTeam()
+          && onlyChanged(['prayedBy', 'status', 'updatedAt'])
+          && request.resource.data.prayedBy.toSet().difference(resource.data.prayedBy.toSet()).hasOnly([request.auth.uid])
+          && resource.data.prayedBy.toSet().difference(request.resource.data.prayedBy.toSet()).size() == 0
+          && request.resource.data.status in ['received', 'praying', 'answered']
+          && request.resource.data.updatedAt == request.time)
+        // L'auteur : annonce que sa prière est exaucée, avec un témoignage facultatif
+        || (resource.data.uid == request.auth.uid
+          && onlyChanged(['status', 'testimony', 'updatedAt'])
+          && request.resource.data.status == 'answered'
+          && (!('testimony' in request.resource.data) || (request.resource.data.testimony is string && request.resource.data.testimony.size() <= 1500))
+          && request.resource.data.updatedAt == request.time)
+      );
+
+      allow delete: if signedIn() && (resource.data.uid == request.auth.uid || isAdmin());
+    }
+
+    // ——— Actualités ———
+    // Lues par les membres validés (ou les seuls serviteurs), publiées par les responsables.
+    match /news/{id} {
+      allow read: if isActive() && (resource.data.audience == 'all' || isServant());
+
+      allow create: if isLeader()
+        && request.resource.data.keys().hasOnly(['title', 'body', 'audience', 'pinned', 'notify', 'authorUid', 'authorName', 'createdAt'])
+        && request.resource.data.title is string && request.resource.data.title.size() >= 3 && request.resource.data.title.size() <= 120
+        && request.resource.data.body is string && request.resource.data.body.size() >= 3 && request.resource.data.body.size() <= 5000
+        && request.resource.data.audience in ['all', 'servants']
+        && request.resource.data.pinned is bool
+        && request.resource.data.notify is bool
+        && request.resource.data.authorUid == request.auth.uid
+        && request.resource.data.authorName is string
+        && request.resource.data.createdAt == request.time;
+
+      allow update: if isLeader()
+        && onlyChanged(['title', 'body', 'audience', 'pinned'])
+        && request.resource.data.title is string && request.resource.data.title.size() >= 3 && request.resource.data.title.size() <= 120
+        && request.resource.data.body is string && request.resource.data.body.size() >= 3 && request.resource.data.body.size() <= 5000
+        && request.resource.data.audience in ['all', 'servants']
+        && request.resource.data.pinned is bool;
+
+      allow delete: if isLeader();
     }
 
     // Tout le reste est fermé tant que les modules suivants ne sont pas ouverts.

@@ -1,5 +1,6 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router } from "expo-router";
+import { useAuth } from "@/lib/auth";
 import { StyleSheet, Text, View } from "react-native";
 import { Body, Btn, Card, Eyebrow, Hero, RowLink, Screen, Section, Title } from "@/components/ui";
 import { call, openWeb } from "@/lib/open";
@@ -13,17 +14,22 @@ const support = [
 ];
 
 export default function Priere() {
+  const { member } = useAuth();
   const hasForm = Boolean(site.prayerForm);
+  const memberActive = member?.status === "active";
   return (
     <Screen
       tabBar={false}
       underHeader
       hero={
         <Hero eyebrow="Nous prions avec vous" lead="Vous n'avez pas à" accent="porter cela seul." intro="Confiez-nous votre sujet de prière. Votre demande est reçue uniquement par l'équipe pastorale et vous pouvez rester anonyme.">
-          {hasForm ? (
+          {memberActive ? (
+            <Btn label="Confier une demande dans l'appli" icon="create-outline" onPress={() => router.push("/prieres")} style={{ marginTop: space.lg }} />
+          ) : null}
+          {hasForm && !memberActive ? (
             <Btn label="Déposer une demande de prière" icon="create-outline" onPress={() => openWeb(site.prayerForm)} style={{ marginTop: space.lg }} />
           ) : null}
-          <Btn label="Appeler l'équipe de prière" icon="call-outline" variant={hasForm ? "ghostDark" : "primary"} onPress={call} style={{ marginTop: 10 }} />
+          <Btn label="Appeler l'équipe de prière" icon="call-outline" variant={hasForm || memberActive ? "ghostDark" : "primary"} onPress={call} style={{ marginTop: 10 }} />
           <View style={styles.private}>
             <Ionicons name="lock-closed-outline" size={14} color={colors.gold400} />
             <Text style={styles.privateText}>Confidentiel & respectueux de votre vie privée</Text>

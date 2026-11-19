@@ -8,12 +8,14 @@
     "scheme": "afvn",
     "userInterfaceStyle": "light",
     "backgroundColor": "#f6f1e7",
-    "description": "L'application de l'Église AFVN de Nantes : horaires et rappels des cultes, live et prédications, demande de prière et accueil des nouveaux.",
+    "description": "L'application de l'\u00c9glise AFVN de Nantes : horaires et rappels des cultes, live et pr\u00e9dications, demande de pri\u00e8re et accueil des nouveaux.",
     "ios": {
       "bundleIdentifier": "fr.afvn.nantes",
       "buildNumber": "1",
       "supportsTablet": true,
-      "config": { "usesNonExemptEncryption": false },
+      "config": {
+        "usesNonExemptEncryption": false
+      },
       "privacyManifests": {
         "NSPrivacyTracking": false,
         "NSPrivacyTrackingDomains": [],
@@ -28,7 +30,9 @@
         "foregroundImage": "./assets/images/adaptive-foreground.png",
         "backgroundColor": "#03141f"
       },
-      "permissions": ["android.permission.POST_NOTIFICATIONS"],
+      "permissions": [
+        "android.permission.POST_NOTIFICATIONS"
+      ],
       "blockedPermissions": [
         "android.permission.SYSTEM_ALERT_WINDOW",
         "android.permission.READ_EXTERNAL_STORAGE",
@@ -58,7 +62,7 @@
       [
         "expo-notifications",
         {
-          "enableRemoteNotifications": false,
+          "enableRemoteNotifications": true,
           "color": "#efb54a"
         }
       ]

@@ -11,7 +11,7 @@ modifier un horaire ou un texte là-bas met à jour le site **et** l'application
 | Accueil | Compte à rebours du prochain culte, accès rapides, annonce, ADN, mot du pasteur |
 | Agenda | Horaires, prochains rendez-vous calculés automatiquement, temps forts |
 | Live | Direct YouTube, derniers messages, réseaux sociaux |
-| Espace | **Espace membre** : inscription, validation par l'église, profil, administration |
+| Espace | **Espace membre** : inscription, validation, prières, actualités, équipe de prière, administration |
 | Église | Histoire, visionnaires, pasteur, ministères, galerie, dons |
 
 Rappels de culte : notifications **locales** (aucun serveur), 30 min avant chaque culte choisi.
@@ -39,7 +39,15 @@ Vérifications : `npm run typecheck` et `npm run lint`.
    mettre `status` = `active` et `roles` = `["member", "admin"]`. Ensuite, tout se gère depuis l'application
    (Espace → Gérer les membres).
 
-Tester les règles de sécurité (Java requis) : `cd firebase && npm run test:rules` — 20 tests.
+7. **Notifications push** (étape 2) :
+   - passer le projet Firebase au forfait **Blaze** (paiement à l'usage, nécessaire pour les Cloud Functions).
+     Pour une église, l'usage reste dans la **part gratuite** (2 millions d'appels par mois) : coût attendu 0 €.
+     Fixez une alerte budgétaire à 1 € dans Google Cloud pour être prévenu au moindre centime.
+   - déployer les fonctions : `cd firebase/functions && npm install && cd .. && npm run deploy:functions`.
+   - lier l'appli à Expo (`npx eas-cli@latest init`), puis donner à EAS les accès d'envoi :
+     Android → fichier de compte de service FCM (`eas credentials`), iOS → clé APNs créée automatiquement par EAS.
+
+Tests (Java requis) : `cd firebase && npm run test:rules` (46 tests de sécurité) et `npm run test:functions` (10 tests de notifications).
 
 ## Publier sur l'App Store et Google Play
 

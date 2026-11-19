@@ -15,7 +15,7 @@ import {
 import { db } from "./firebase";
 
 // Modèle d'un membre (document users/{uid}).
-export type Role = "member" | "servant" | "leader" | "admin";
+export type Role = "member" | "servant" | "intercessor" | "leader" | "admin";
 export type Status = "pending" | "active" | "rejected" | "suspended";
 
 export type Member = {
@@ -34,12 +34,15 @@ export type Member = {
 export const roleLabels: Record<Role, string> = {
   member: "Membre",
   servant: "Serviteur",
+  intercessor: "Intercesseur",
   leader: "Responsable",
   admin: "Administrateur",
 };
 
 export const isAdmin = (m?: Member | null) => !!m && m.status === "active" && m.roles.includes("admin");
 export const isServant = (m?: Member | null) => !!m && m.status === "active" && m.roles.some((r) => r !== "member");
+export const isPrayerTeam = (m?: Member | null) => !!m && m.status === "active" && m.roles.some((r) => r === "intercessor" || r === "leader" || r === "admin");
+export const isLeader = (m?: Member | null) => !!m && m.status === "active" && m.roles.some((r) => r === "leader" || r === "admin");
 
 // Création du profil à l'inscription : toujours « en attente » et simple membre.
 // Les règles Firestore refusent toute autre valeur.

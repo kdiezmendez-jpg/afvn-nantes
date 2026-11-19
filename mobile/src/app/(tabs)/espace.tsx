@@ -1,18 +1,19 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router } from "expo-router";
-import { useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { Body, Btn, Card, Eyebrow, Hero, RowLink, Screen, Section, Title, type IconName } from "@/components/ui";
 import { resendVerification, useAuth } from "@/lib/auth";
 import { firebaseConfigured } from "@/lib/firebase";
-import { isAdmin, roleLabels } from "@/lib/members";
-import { call } from "@/lib/open";
+import { isAdmin, isLeader, isPrayerTeam, roleLabels } from "@/lib/members";
+import { enablePush, pushStatus } from "@/lib/push";
+import { call, tap } from "@/lib/open";
 import { colors, fonts, space } from "@/lib/theme";
 
 // Modules de l'espace membre, ouverts au fil des étapes du projet.
-const modules: { icon: IconName; title: string; text: string; soon?: boolean }[] = [
-  { icon: "sparkles", title: "Mes demandes de prière", text: "Confiez un sujet à l'équipe pastorale et suivez-le.", soon: true },
-  { icon: "newspaper-outline", title: "Actualités", text: "Les annonces de l'église, avec notifications.", soon: true },
+const modules: { icon: IconName; title: string; text: string; soon?: boolean; href?: "/prieres" | "/actualites" }[] = [
+  { icon: "sparkles", title: "Mes demandes de prière", text: "Confiez un sujet à l'équipe pastorale et suivez-le.", href: "/prieres" },
+  { icon: "newspaper-outline", title: "Actualités", text: "Les annonces de l'église, avec notifications.", href: "/actualites" },
   { icon: "calendar-outline", title: "Événements & inscriptions", text: "S'inscrire à ESCHATOS, aux séminaires…", soon: true },
   { icon: "water-outline", title: "Mon baptême", text: "Demander le baptême et suivre la préparation.", soon: true },
   { icon: "school-outline", title: "Formation des serviteurs", text: "Transformation holistique centrée sur la Vérité.", soon: true },
@@ -101,15 +102,18 @@ export default function Espace() {
         </Hero>
       }
     >
-      {isAdmin(member) ? (
+      <PushCard uid={member.uid} />
+      {isAdmin(member) || isPrayerTeam(member) || isLeader(member) ? (
         <Section style={{ marginTop: space.xl }}>
-          <Eyebrow>Administration</Eyebrow>
-          <View style={{ marginTop: space.md }}>
-            <RowLink icon="shield-checkmark-outline" title="Gérer les membres" subtitle="Valider les inscriptions, attribuer les rôles" onPress={() => router.push("/admin/membres")} />
+          <Eyebrow>Mes services</Eyebrow>
+          <View style={{ marginTop: space.md, gap: 10 }}>
+            {isPrayerTeam(member) ? <RowLink icon="sparkles" title="Équipe de prière" subtitle="Porter les demandes confiées" onPress={() => router.push("/prieres/equipe")} /> : null}
+            {isLeader(member) ? <RowLink icon="megaphone-outline" title="Publier une actualité" subtitle="Avec notification aux membres" onPress={() => router.push("/actualites/nouvelle")} /> : null}
+            {isAdmin(member) ? <RowLink icon="shield-checkmark-outline" title="Gérer les membres" subtitle="Valider les inscriptions, attribuer les rôles" onPress={() => router.push("/admin/membres")} /> : null}
           </View>
         </Section>
       ) : null}
-      <Section style={{ marginTop: isAdmin(member) ? space.xxl : space.xl }}>
+      <Section style={{ marginTop: space.xxl }}>
         <Title lead="Vivre l'église" accent="au quotidien." size={28} />
         <View style={{ gap: 10, marginTop: space.lg }}>
           {modules.map((m) => (
@@ -124,7 +128,48 @@ export default function Espace() {
   );
 }
 
-function ModuleRow({ icon, title, text, soon }: { icon: IconName; title: string; text: string; soon?: boolean }) {
+// Proposition d'activer les notifications, au moment où elles ont du sens (compte validé).
+function PushCard({ uid }: { uid: string }) {
+  const [status, setStatus] = useState<string>("unknown");
+  useEffect(() => {
+    let alive = true;
+    pushStatus().then((s) => {
+      if (!alive) return;
+      setStatus(s);
+      if (s === "granted") enablePush(uid, false).catch(() => {});
+    });
+    return () => {
+      alive = false;
+    };
+  }, [uid]);
+  if (status !== "ask") return null;
+  return (
+    <Section style={{ marginTop: space.xl }}>
+      <Card style={{ backgroundColor: colors.gold200, borderColor: colors.gold200 }}>
+        <Ionicons name="notifications-outline" size={24} color={colors.gold700} />
+        <Text style={styles.cardTitle}>Restez informé</Text>
+        <Text style={styles.cardText}>Recevez les annonces de l&apos;église et sachez quand l&apos;équipe prie pour vous.</Text>
+        <Btn label="Activer les notifications" onPress={() => enablePush(uid).then((ok) => setStatus(ok ? "granted" : "denied"))} style={{ marginTop: 12 }} />
+      </Card>
+    </Section>
+  );
+}
+
+function ModuleRow({ icon, title, text, soon, href }: { icon: IconName; title: string; text: string; soon?: boolean; href?: "/prieres" | "/actualites" }) {
+  if (href && !soon) {
+    return (
+      <Pressable accessibilityRole="button" onPress={() => { tap(); router.push(href); }} style={({ pressed }) => [styles.module, pressed && { backgroundColor: "#efe8da" }]}>
+        <View style={styles.moduleIcon}>
+          <Ionicons name={icon} size={20} color={colors.gold700} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.moduleTitle}>{title}</Text>
+          <Text style={styles.moduleText}>{text}</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={18} color={colors.muted} />
+      </Pressable>
+    );
+  }
   return (
     <View style={styles.module} accessible accessibilityLabel={`${title}. ${text}${soon ? ". Bientôt disponible" : ""}`}>
       <View style={styles.moduleIcon}>
