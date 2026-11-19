@@ -1,0 +1,76 @@
+rules_version = '2';
+
+// Règles de sécurité de la base de l'application AFVN Nantes.
+// Principe : tout est interdit sauf ce qui est explicitement autorisé ci-dessous.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+    function profile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    function hasProfile() {
+      return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+    // Membre validé par l'église
+    function isActive() {
+      return hasProfile() && profile().status == 'active';
+    }
+    function isAdmin() {
+      return isActive() && 'admin' in profile().roles;
+    }
+    function validName(v) {
+      return v is string && v.size() >= 1 && v.size() <= 60;
+    }
+
+    match /users/{uid} {
+      // Chacun lit son profil ; les administrateurs lisent tout ;
+      // les membres validés voient l'annuaire (profils actifs ayant accepté d'y figurer).
+      allow read: if signedIn() && (
+        request.auth.uid == uid
+        || isAdmin()
+        || (isActive() && resource.data.status == 'active' && resource.data.directoryVisible == true)
+      );
+
+      // Inscription : toujours « en attente », simple membre, absent de l'annuaire.
+      allow create: if signedIn()
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['firstName', 'lastName', 'email', 'phone', 'status', 'roles', 'directoryVisible', 'acceptedTermsAt', 'createdAt'])
+        && validName(request.resource.data.firstName)
+        && validName(request.resource.data.lastName)
+        && request.resource.data.email == request.auth.token.email.lower()
+        && (!('phone' in request.resource.data) || (request.resource.data.phone is string && request.resource.data.phone.size() <= 30))
+        && request.resource.data.status == 'pending'
+        && request.resource.data.roles == ['member']
+        && request.resource.data.directoryVisible == false
+        && request.resource.data.acceptedTermsAt == request.time
+        && request.resource.data.createdAt == request.time;
+
+      // Le membre modifie uniquement ses informations personnelles ;
+      // seul un administrateur change le statut (validation) et les rôles.
+      allow update: if signedIn() && (
+        (request.auth.uid == uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['firstName', 'lastName', 'phone', 'directoryVisible'])
+          && validName(request.resource.data.firstName)
+          && validName(request.resource.data.lastName)
+          && request.resource.data.directoryVisible is bool)
+        || (isAdmin()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'roles', 'reviewedAt'])
+          && request.resource.data.status in ['pending', 'active', 'rejected', 'suspended']
+          && request.resource.data.roles is list
+          && request.resource.data.roles.hasOnly(['member', 'servant', 'leader', 'admin'])
+          && 'member' in request.resource.data.roles)
+      );
+
+      // Suppression du compte par son titulaire (droit à l'effacement) ou par un administrateur.
+      allow delete: if signedIn() && (request.auth.uid == uid || isAdmin());
+    }
+
+    // Tout le reste est fermé tant que les modules suivants ne sont pas ouverts.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
