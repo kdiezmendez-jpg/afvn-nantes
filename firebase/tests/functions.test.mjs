@@ -110,6 +110,13 @@ check("Demande de baptême → pas envoyée aux intercesseurs", !to("ExponentPus
 await updated(fns.onBaptismUpdated, "baptisms/paul", { uid: "paul" }, { status: "scheduled", scheduledAt: Timestamp.fromDate(new Date("2027-01-10T08:30:00Z")), updatedAt: new Date() });
 check("Date fixée → le membre reçoit la date en français", to("ExponentPushToken[paul]").some((m) => m.body.includes("dimanche 10 janvier") && m.body.includes("09:30")));
 
+// 9. Session de formation
+await db.doc("users/jean").set(user("Jean", ["member", "trainer"]));
+await db.doc("users/ruth").update({ roles: ["member", "intercessor", "servant"] });
+await created(fns.onTrainingSessionCreated, "trainingSessions/s1", { id: "s1" }, { moduleId: "m1", title: "Leçon 1 : Toute l'histoire", startsAt: Timestamp.fromDate(new Date("2027-02-01T18:00:00Z")), kind: "live", youtubeUrl: null, createdBy: "jean", createdAt: new Date() });
+check("Session de formation → les serviteurs sont prévenus", to("ExponentPushToken[ruth]").some((m) => m.title === "Formation en direct" && m.body.includes("lundi 1 février")));
+check("Session de formation → pas envoyée aux simples membres", !to("ExponentPushToken[paul]").some((m) => m.title === "Formation en direct"));
+
 for (const [s, n] of results) console.log(s, n);
 server.close();
 process.exit(results.some(([s]) => s !== "OK  ") ? 1 : 0);

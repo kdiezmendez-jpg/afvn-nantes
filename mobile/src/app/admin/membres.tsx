@@ -12,7 +12,7 @@ const tabs: { key: Status; label: string }[] = [
   { key: "active", label: "Membres" },
   { key: "rejected", label: "Refusés" },
 ];
-const assignable: Role[] = ["servant", "intercessor", "leader", "admin"];
+const assignable: Role[] = ["servant", "intercessor", "trainer", "leader", "admin"];
 
 export default function AdminMembres() {
   const { member: me } = useAuth();

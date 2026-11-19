@@ -2,7 +2,7 @@
 // Lancer : cd firebase && npx firebase emulators:exec --only firestore "node tests/rules.test.mjs"
 import { assertFails, assertSucceeds, initializeTestEnvironment } from "@firebase/rules-unit-testing";
 import { readFileSync } from "node:fs";
-import { arrayUnion, collection, Timestamp, deleteDoc, doc, getDoc, getDocs, query, serverTimestamp, setDoc, updateDoc, where } from "firebase/firestore";
+import { arrayUnion, collection, collectionGroup, Timestamp, deleteDoc, doc, getDoc, getDocs, query, serverTimestamp, setDoc, updateDoc, where } from "firebase/firestore";
 
 const env = await initializeTestEnvironment({
   projectId: "demo-afvn",
@@ -22,6 +22,8 @@ await env.withSecurityRulesDisabled(async (ctx) => {
   await setDoc(doc(d, "users/hidden"), { firstName: "Jean", lastName: "H", email: "h@x.fr", status: "active", roles: ["member"], directoryVisible: false });
   await setDoc(doc(d, "users/interc"), { firstName: "Ruth", lastName: "I", email: "i@x.fr", status: "active", roles: ["member", "intercessor"], directoryVisible: false });
   await setDoc(doc(d, "users/leader"), { firstName: "Esther", lastName: "L", email: "l@x.fr", status: "active", roles: ["member", "leader"], directoryVisible: false });
+  await setDoc(doc(d, "users/trainer"), { firstName: "Jean", lastName: "F", email: "f@x.fr", status: "active", roles: ["member", "trainer"], directoryVisible: false });
+  await setDoc(doc(d, "users/servant"), { firstName: "Luc", lastName: "S", email: "s@x.fr", status: "active", roles: ["member", "servant"], directoryVisible: false });
   await setDoc(doc(d, "users/stillpending"), { firstName: "Eve", lastName: "P", email: "p@x.fr", status: "pending", roles: ["member"], directoryVisible: false });
   await setDoc(doc(d, "users/waiting"), { firstName: "Luc", lastName: "W", email: "w@x.fr", status: "pending", roles: ["member"], directoryVisible: false, createdAt: new Date() });
 });
@@ -125,6 +127,36 @@ await check("Baptême : le responsable fixe la date et coche une étape", assert
 await check("Baptême : le membre ne peut pas se déclarer baptisé", assertFails(updateDoc(doc(paul, "baptisms/visible"), { status: "baptized", updatedAt: serverTimestamp() })));
 await check("Baptême : le membre peut annuler sa demande", assertSucceeds(updateDoc(doc(paul, "baptisms/visible"), { status: "cancelled", updatedAt: serverTimestamp() })));
 await check("Baptême : le responsable liste les demandes", assertSucceeds(getDocs(collection(esther, "baptisms"))));
+
+// ——— Étape 4 : formation ———
+const trainer = as("trainer", "f@x.fr");
+const servant = as("servant", "s@x.fr");
+const prog = (extra = {}) => ({ lessons: ["m1-l1"], name: "Luc S", updatedAt: serverTimestamp(), ...extra });
+await check("Formation : un serviteur enregistre sa progression", assertSucceeds(setDoc(doc(servant, "users/servant/progress/m1"), prog())));
+await check("Formation : un simple membre n'a pas accès à la formation", assertFails(setDoc(doc(paul, "users/visible/progress/m1"), prog({ name: "Paul" }))));
+await check("Formation : impossible d'écrire la progression d'un autre", assertFails(setDoc(doc(servant, "users/visible/progress/m1"), prog())));
+await check("Formation : le formateur voit la progression de tous", assertSucceeds(getDocs(query(collectionGroup(trainer, "progress")))));
+await check("Formation : un serviteur ne voit pas la progression des autres", assertFails(getDocs(query(collectionGroup(servant, "progress")))));
+const file = (id, kind, extra = {}) => ({ moduleId: "m1", kind, name: "Manuel", path: `training/m1/${kind}/${id}.pdf`, size: 1000, uploadedBy: "trainer", createdAt: serverTimestamp(), ...extra });
+await check("Manuels : le formateur ajoute le manuel de l'étudiant", assertSucceeds(setDoc(doc(trainer, "trainingFiles/f1"), file("f1", "student"))));
+await check("Manuels : le formateur ajoute le guide de l'enseignant", assertSucceeds(setDoc(doc(trainer, "trainingFiles/f2"), file("f2", "trainer"))));
+await check("Manuels : un serviteur ne peut pas ajouter de fichier", assertFails(setDoc(doc(servant, "trainingFiles/f3"), file("f3", "student", { uploadedBy: "servant" }))));
+await check("Manuels : chemin de fichier incohérent refusé", assertFails(setDoc(doc(trainer, "trainingFiles/f4"), file("f4", "student", { path: "training/m1/trainer/f4.pdf" }))));
+await check("Manuels : le serviteur lit le manuel de l'étudiant", assertSucceeds(getDoc(doc(servant, "trainingFiles/f1"))));
+await check("Manuels : le serviteur ne lit pas le guide de l'enseignant", assertFails(getDoc(doc(servant, "trainingFiles/f2"))));
+await check("Manuels : un simple membre ne lit aucun manuel", assertFails(getDoc(doc(paul, "trainingFiles/f1"))));
+await check("Manuels : le serviteur liste les manuels de l'étudiant", assertSucceeds(getDocs(query(collection(servant, "trainingFiles"), where("kind", "==", "student")))));
+const sess = (extra = {}) => ({ moduleId: "m1", title: "Leçon 1 en direct", startsAt: Timestamp.fromDate(new Date("2027-02-01T18:00:00Z")), kind: "live", youtubeUrl: "https://www.youtube.com/live/abc", createdBy: "trainer", createdAt: serverTimestamp(), ...extra });
+await check("Sessions : le formateur programme un direct", assertSucceeds(setDoc(doc(trainer, "trainingSessions/s1"), sess())));
+await check("Sessions : lien non YouTube refusé", assertFails(setDoc(doc(trainer, "trainingSessions/s2"), sess({ youtubeUrl: "https://pirate.example/live" }))));
+await check("Sessions : un serviteur ne programme pas de session", assertFails(setDoc(doc(servant, "trainingSessions/s3"), sess({ createdBy: "servant" }))));
+await check("Sessions : un serviteur lit la session", assertSucceeds(getDoc(doc(servant, "trainingSessions/s1"))));
+await check("Sessions : un simple membre ne la lit pas", assertFails(getDoc(doc(paul, "trainingSessions/s1"))));
+const q = (uid, extra = {}) => ({ uid, name: "Luc S", text: "Que signifie holistique ?", answered: false, createdAt: serverTimestamp(), ...extra });
+await check("Questions : un serviteur pose une question", assertSucceeds(setDoc(doc(servant, "trainingSessions/s1/questions/q1"), q("servant"))));
+await check("Questions : impossible de la marquer « répondue » soi-même", assertFails(updateDoc(doc(servant, "trainingSessions/s1/questions/q1"), { answered: true })));
+await check("Questions : le formateur la marque « répondue »", assertSucceeds(updateDoc(doc(trainer, "trainingSessions/s1/questions/q1"), { answered: true })));
+await check("Questions : un simple membre ne pose pas de question", assertFails(setDoc(doc(paul, "trainingSessions/s1/questions/q2"), q("visible"))));
 
 for (const [s, n] of results) console.log(s, n);
 await env.cleanup();

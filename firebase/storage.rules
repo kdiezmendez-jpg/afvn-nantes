@@ -1,0 +1,32 @@
+rules_version = '2';
+
+// Fichiers de la formation : les règles lisent le rôle du membre dans Firestore.
+service firebase.storage {
+  match /b/{bucket}/o {
+    function profile() {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data;
+    }
+    function active() {
+      return request.auth != null && profile().status == 'active';
+    }
+    function trainer() {
+      return active() && profile().roles.hasAny(['trainer', 'admin']);
+    }
+    function servant() {
+      return active() && profile().roles.hasAny(['servant', 'intercessor', 'trainer', 'leader', 'admin']);
+    }
+
+    match /training/{moduleId}/{kind}/{file} {
+      allow read: if trainer() || (kind == 'student' && servant());
+      allow create: if trainer()
+        && kind in ['student', 'trainer']
+        && request.resource.contentType == 'application/pdf'
+        && request.resource.size < 30 * 1024 * 1024;
+      allow delete: if trainer();
+    }
+
+    match /{all=**} {
+      allow read, write: if false;
+    }
+  }
+}

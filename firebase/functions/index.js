@@ -131,3 +131,17 @@ export async function sendEventReminders(now = new Date()) {
   return sent;
 }
 export const eventReminders = onSchedule({ schedule: "every day 18:00", timeZone: "Europe/Paris" }, () => sendEventReminders().then(() => undefined));
+
+// ——— Étape 4 : formation ———
+// 9. Nouvelle session de formation → les serviteurs sont prévenus.
+export const onTrainingSessionCreated = onDocumentCreated("trainingSessions/{id}", async (event) => {
+  const t = event.data?.data();
+  if (!t) return;
+  const date = new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris" }).format(t.startsAt.toDate());
+  const servants = await activeMembers(["servant", "intercessor", "trainer", "leader", "admin"]);
+  await notify(servants.filter((u) => u !== t.createdBy), {
+    title: t.kind === "live" ? "Formation en direct" : "Formation en petit groupe",
+    body: `${t.title} — ${date}.`,
+    url: `/formation/session/${event.params.id}`,
+  });
+});

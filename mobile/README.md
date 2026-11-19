@@ -47,7 +47,9 @@ Vérifications : `npm run typecheck` et `npm run lint`.
    - lier l'appli à Expo (`npx eas-cli@latest init`), puis donner à EAS les accès d'envoi :
      Android → fichier de compte de service FCM (`eas credentials`), iOS → clé APNs créée automatiquement par EAS.
 
-Tests (Java requis) : `cd firebase && npm run test:rules` (69 tests de sécurité) et `npm run test:functions` (19 tests des fonctions serveur).
+Tests (Java requis) : `cd firebase && npm run test:rules` (91 tests de sécurité), `npm run test:storage` (8 tests des fichiers) et `npm run test:functions` (19 tests des fonctions serveur).
+
+**Stockage des manuels** : dans la console Firebase, activer **Storage** (emplacement europe-west9), puis `npm run deploy:rules` déploie aussi les règles des fichiers. Les formateurs déposent ensuite les PDF depuis l'appli (Formation → module → « Ajouter un PDF »).
 
 ## Publier sur l'App Store et Google Play
 

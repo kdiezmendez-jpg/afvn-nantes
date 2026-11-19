@@ -30,7 +30,11 @@ service cloud.firestore {
       return isActive() && profile().roles.hasAny(['leader', 'admin']);
     }
     function isServant() {
-      return isActive() && profile().roles.hasAny(['servant', 'intercessor', 'leader', 'admin']);
+      return isActive() && profile().roles.hasAny(['servant', 'intercessor', 'trainer', 'leader', 'admin']);
+    }
+    // Formateurs : gèrent la formation des serviteurs
+    function isTrainer() {
+      return isActive() && profile().roles.hasAny(['trainer', 'admin']);
     }
     function onlyChanged(keys) {
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
@@ -74,7 +78,7 @@ service cloud.firestore {
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'roles', 'reviewedAt'])
           && request.resource.data.status in ['pending', 'active', 'rejected', 'suspended']
           && request.resource.data.roles is list
-          && request.resource.data.roles.hasOnly(['member', 'servant', 'intercessor', 'leader', 'admin'])
+          && request.resource.data.roles.hasOnly(['member', 'servant', 'intercessor', 'trainer', 'leader', 'admin'])
           && 'member' in request.resource.data.roles)
       );
 
@@ -233,6 +237,63 @@ service cloud.firestore {
           && request.resource.data.updatedAt == request.time)
       );
       allow delete: if signedIn() && (request.auth.uid == uid || isAdmin());
+    }
+
+    // ——— Formation des serviteurs ———
+    // Progression personnelle : écrite par le serviteur, lue par lui et les formateurs.
+    match /users/{uid}/progress/{moduleId} {
+      allow read: if signedIn() && (request.auth.uid == uid || isTrainer());
+      allow write: if isServant() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['lessons', 'name', 'updatedAt'])
+        && request.resource.data.lessons is list && request.resource.data.lessons.size() <= 50
+        && request.resource.data.name is string && request.resource.data.name.size() <= 130
+        && request.resource.data.updatedAt == request.time;
+    }
+    match /{path=**}/progress/{moduleId} {
+      allow read: if isTrainer();
+    }
+
+    // Manuels : « student » pour les serviteurs, « trainer » pour les formateurs uniquement.
+    match /trainingFiles/{id} {
+      allow read: if isTrainer() || (isServant() && resource.data.kind == 'student');
+      allow create: if isTrainer()
+        && request.resource.data.keys().hasOnly(['moduleId', 'kind', 'name', 'path', 'size', 'uploadedBy', 'createdAt'])
+        && request.resource.data.kind in ['student', 'trainer']
+        && request.resource.data.moduleId is string && request.resource.data.moduleId.size() <= 40
+        && request.resource.data.name is string && request.resource.data.name.size() <= 200
+        && request.resource.data.path == 'training/' + request.resource.data.moduleId + '/' + request.resource.data.kind + '/' + id + '.pdf'
+        && request.resource.data.size is int && request.resource.data.size <= 30 * 1024 * 1024
+        && request.resource.data.uploadedBy == request.auth.uid
+        && request.resource.data.createdAt == request.time;
+      allow delete: if isTrainer();
+    }
+
+    // Sessions de formation (direct YouTube non répertorié ou appel en petit groupe) et questions.
+    match /trainingSessions/{id} {
+      allow read: if isServant();
+      allow create: if isTrainer()
+        && request.resource.data.keys().hasOnly(['moduleId', 'title', 'startsAt', 'kind', 'youtubeUrl', 'createdBy', 'createdAt'])
+        && request.resource.data.title is string && request.resource.data.title.size() >= 3 && request.resource.data.title.size() <= 120
+        && request.resource.data.startsAt is timestamp
+        && request.resource.data.kind in ['live', 'group']
+        && (request.resource.data.youtubeUrl == null || (request.resource.data.youtubeUrl is string && request.resource.data.youtubeUrl.matches('^https://(www\\.)?(youtube\\.com|youtu\\.be)/.*')))
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.createdAt == request.time;
+      allow update: if isTrainer() && onlyChanged(['title', 'startsAt', 'youtubeUrl']);
+      allow delete: if isTrainer();
+
+      match /questions/{qid} {
+        allow read: if isServant();
+        allow create: if isServant()
+          && request.resource.data.keys().hasOnly(['uid', 'name', 'text', 'answered', 'createdAt'])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.name is string && request.resource.data.name.size() <= 130
+          && request.resource.data.text is string && request.resource.data.text.size() >= 2 && request.resource.data.text.size() <= 600
+          && request.resource.data.answered == false
+          && request.resource.data.createdAt == request.time;
+        allow update: if isTrainer() && onlyChanged(['answered']) && request.resource.data.answered is bool;
+        allow delete: if signedIn() && (resource.data.uid == request.auth.uid || isTrainer());
+      }
     }
 
     // Tout le reste est fermé tant que les modules suivants ne sont pas ouverts.

@@ -22,13 +22,22 @@ Chaque étape est livrée testée (règles de sécurité + parcours complet) ava
   compteur tenu par le serveur, fermeture des inscriptions, liste des inscrits, **rappel la veille à 18h**.
 - **Parcours de baptême** : demande → entretien → préparation (5 étapes avec versets) → date fixée → baptisé ;
   les responsables cochent les étapes, fixent la date et laissent un message ; le membre est notifié à chaque étape.
-- 69 tests de règles de sécurité + 19 tests des fonctions serveur + parcours complet testé.
+- 69 tests de règles de sécurité + 17 tests des fonctions serveur + parcours complet testé.
 - Le contenu des étapes de préparation (`mobile/src/lib/baptism.ts`) est une base à relire par le pasteur.
 
-## Étape 4 — Formation des serviteurs
-- Parcours « Transformation holistique centrée sur la Vérité » : modules et leçons tirés des manuels,
-  lecture des manuels (PDF), progression, quiz de validation, attestation.
-- **Visioconférence intégrée** pour les sessions de formation (voir le choix technique ci-dessous).
+## ✅ Étape 4 — Formation des serviteurs (livrée)
+- Parcours « Transformation Centrée sur la Vérité » (Reconciled World, CC BY-SA 3.0) : module 1 (9 leçons)
+  et module 2 (8 leçons ; titres des leçons 1 et 7 à compléter), progression par leçon.
+- Nouveau rôle **Formateur** : dépose les PDF depuis le téléphone ; manuels de l'étudiant pour les serviteurs,
+  guide de l'enseignant et supports visuels **réservés aux formateurs** (règles Firestore + Storage).
+- Sessions programmées (notification aux serviteurs) : **direct YouTube non répertorié** avec fil de questions
+  en direct (le formateur marque les questions répondues), et sessions « petit groupe ».
+- Tableau de suivi de la progression des serviteurs pour les formateurs.
+- 91 tests de règles Firestore, 8 tests de règles Storage (exécutés sur GitHub), 19 tests des fonctions serveur.
+
+## Étape 4 b — Appel vidéo en petit groupe
+- Appel vidéo direct entre téléphones (WebRTC, jusqu'à 5–6 personnes), signalisation par Firebase, gratuit.
+- Nécessite une version de développement de l'appli (`npx expo run:android`).
 
 ## Étape 5 — Ministères, groupes, annuaire & messagerie
 - Rejoindre un ministère, planning de service, discussion de groupe.
