@@ -4,7 +4,7 @@
 import http from "node:http";
 import { createRequire } from "node:module";
 const require = createRequire(new URL("../functions/package.json", import.meta.url));
-const { getFirestore, FieldValue } = require("firebase-admin/firestore");
+const { getFirestore, FieldValue, Timestamp } = require("firebase-admin/firestore");
 
 const received = [];
 const server = http.createServer((req, res) => {
@@ -29,6 +29,11 @@ const db = getFirestore();
 const snap = (path, data) => ({ data: () => data, ref: db.doc(path) });
 async function created(fn, path, params, data) {
   await db.doc(path).set(data);
+  await fn.run({ params, data: snap(path, data) });
+}
+async function removed(fn, path, params) {
+  const data = (await db.doc(path).get()).data();
+  await db.doc(path).delete();
   await fn.run({ params, data: snap(path, data) });
 }
 async function updated(fn, path, params, patch) {
@@ -81,6 +86,29 @@ check("« Je prie » → l'auteur est encouragé", await until(() => to("Exponen
 // 5. Nettoyage des appareils désinstallés
 await wait(1000);
 check("Appareil désinstallé → jeton supprimé automatiquement", !(await db.doc("users/paul/devices/ExponentPushToken[ancien]").get()).exists);
+
+// 6. Inscriptions : compteur tenu par le serveur
+await db.doc("users/esther").set(user("Esther", ["member", "leader"]));
+await db.doc("users/esther/devices/ExponentPushToken[esther]").set(device("ExponentPushToken[esther]"));
+const tomorrow = new Date(Date.now() + 20 * 3600e3);
+await db.doc("events/e1").set({ title: "ESCHATOS 2027", description: "", location: "69 bis rue du Bêle", startsAt: Timestamp.fromDate(tomorrow), audience: "all", capacity: 50, registrationOpen: true, registeredCount: 0, createdBy: "esther", createdAt: new Date() });
+await created(fns.onRegistrationCreated, "events/e1/registrations/paul", { id: "e1", uid: "paul" }, { uid: "paul", name: "Paul T", guests: 2, createdAt: new Date() });
+await created(fns.onRegistrationCreated, "events/e1/registrations/ruth", { id: "e1", uid: "ruth" }, { uid: "ruth", name: "Ruth T", guests: 0, createdAt: new Date() });
+check("Inscriptions → compteur = 4 (Paul + 2 accompagnants, Ruth)", (await db.doc("events/e1").get()).data().registeredCount === 4);
+await removed(fns.onRegistrationDeleted, "events/e1/registrations/ruth", { id: "e1", uid: "ruth" });
+check("Désinscription → compteur = 3", (await db.doc("events/e1").get()).data().registeredCount === 3);
+
+// 7. Rappel la veille
+await fns.sendEventReminders();
+check("Rappel de la veille → reçu par les inscrits", to("ExponentPushToken[paul]").some((m) => m.title === "Demain : ESCHATOS 2027"));
+check("Rappel de la veille → pas envoyé aux non-inscrits", !to("ExponentPushToken[ruth]").some((m) => m.title === "Demain : ESCHATOS 2027"));
+
+// 8. Baptême
+await created(fns.onBaptismRequested, "baptisms/paul", { uid: "paul" }, { uid: "paul", name: "Paul T", motivation: "Je veux suivre Jésus.", status: "requested", steps: [], createdAt: new Date(), updatedAt: new Date() });
+check("Demande de baptême → les responsables sont prévenus", to("ExponentPushToken[esther]").some((m) => m.title === "Demande de baptême") && to("ExponentPushToken[pasteur]").some((m) => m.title === "Demande de baptême"));
+check("Demande de baptême → pas envoyée aux intercesseurs", !to("ExponentPushToken[ruth]").some((m) => m.title === "Demande de baptême"));
+await updated(fns.onBaptismUpdated, "baptisms/paul", { uid: "paul" }, { status: "scheduled", scheduledAt: Timestamp.fromDate(new Date("2027-01-10T08:30:00Z")), updatedAt: new Date() });
+check("Date fixée → le membre reçoit la date en français", to("ExponentPushToken[paul]").some((m) => m.body.includes("dimanche 10 janvier") && m.body.includes("09:30")));
 
 for (const [s, n] of results) console.log(s, n);
 server.close();

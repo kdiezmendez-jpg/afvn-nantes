@@ -1,7 +1,8 @@
 import { initializeApp } from "firebase-admin/app";
-import { getFirestore } from "firebase-admin/firestore";
+import { FieldValue, getFirestore, Timestamp } from "firebase-admin/firestore";
 import { setGlobalOptions } from "firebase-functions/v2";
-import { onDocumentCreated, onDocumentUpdated } from "firebase-functions/v2/firestore";
+import { onDocumentCreated, onDocumentDeleted, onDocumentUpdated } from "firebase-functions/v2/firestore";
+import { onSchedule } from "firebase-functions/v2/scheduler";
 import { sendPush } from "./push.js";
 
 initializeApp();
@@ -75,3 +76,58 @@ export const onPrayerSupported = onDocumentUpdated("prayers/{id}", async (event)
     await notify([after.uid], { title: "On prie pour vous 🙏", body: "L'équipe de prière porte votre demande devant Dieu.", url: "/prieres" });
   }
 });
+
+// ——— Étape 3 : événements et baptême ———
+
+// 5. Compteur d'inscrits (personne + accompagnants), tenu uniquement côté serveur.
+export const onRegistrationCreated = onDocumentCreated("events/{id}/registrations/{uid}", async (event) => {
+  const r = event.data?.data();
+  if (!r) return;
+  await db.doc(`events/${event.params.id}`).update({ registeredCount: FieldValue.increment(1 + (r.guests ?? 0)) });
+});
+export const onRegistrationDeleted = onDocumentDeleted("events/{id}/registrations/{uid}", async (event) => {
+  const r = event.data?.data();
+  if (!r) return;
+  await db.doc(`events/${event.params.id}`).update({ registeredCount: FieldValue.increment(-(1 + (r.guests ?? 0))) }).catch(() => {});
+});
+
+// 6. Nouvelle demande de baptême → les responsables.
+export const onBaptismRequested = onDocumentCreated("baptisms/{uid}", async (event) => {
+  const b = event.data?.data();
+  if (!b) return;
+  await notify(await activeMembers(["leader", "admin"]), { title: "Demande de baptême", body: `${b.name} souhaite être baptisé(e).`, url: "/admin/baptemes" });
+});
+
+// 7. Le parcours avance → le membre est prévenu.
+const baptismMessages = {
+  interview: "Un responsable va vous proposer un entretien.",
+  preparation: "Votre préparation au baptême commence !",
+  scheduled: "La date de votre baptême est fixée.",
+  baptized: "Gloire à Dieu pour votre baptême ! Bienvenue dans cette nouvelle vie.",
+};
+export const onBaptismUpdated = onDocumentUpdated("baptisms/{uid}", async (event) => {
+  const before = event.data?.before.data();
+  const after = event.data?.after.data();
+  if (!before || !after || before.status === after.status || !baptismMessages[after.status]) return;
+  let body = baptismMessages[after.status];
+  if (after.status === "scheduled" && after.scheduledAt) {
+    const date = new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris" }).format(after.scheduledAt.toDate());
+    body = `Votre baptême est fixé au ${date}.`;
+  }
+  await notify([event.params.uid], { title: "Votre parcours de baptême", body, url: "/bapteme" });
+});
+
+// 8. Rappel la veille d'un événement, chaque jour à 18h (heure de Paris), aux inscrits.
+export async function sendEventReminders(now = new Date()) {
+  const from = new Date(now.getTime() + 6 * 3600e3);
+  const to = new Date(now.getTime() + 30 * 3600e3);
+  const events = await db.collection("events").where("startsAt", ">=", Timestamp.fromDate(from)).where("startsAt", "<", Timestamp.fromDate(to)).get();
+  let sent = 0;
+  for (const e of events.docs) {
+    const regs = await e.ref.collection("registrations").get();
+    const hour = new Intl.DateTimeFormat("fr-FR", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris" }).format(e.data().startsAt.toDate());
+    sent += await notify(regs.docs.map((r) => r.id), { title: `Demain : ${e.data().title}`, body: `Rendez-vous à ${hour}, ${e.data().location}.`, url: `/evenements/${e.id}` });
+  }
+  return sent;
+}
+export const eventReminders = onSchedule({ schedule: "every day 18:00", timeZone: "Europe/Paris" }, () => sendEventReminders().then(() => undefined));

@@ -158,6 +158,83 @@ service cloud.firestore {
       allow delete: if isLeader();
     }
 
+    // ——— Événements & inscriptions ———
+    function eventDoc(id) {
+      return get(/databases/$(database)/documents/events/$(id)).data;
+    }
+    function validEvent(d) {
+      return d.title is string && d.title.size() >= 3 && d.title.size() <= 120
+        && d.description is string && d.description.size() <= 5000
+        && d.location is string && d.location.size() <= 200
+        && d.startsAt is timestamp
+        && d.audience in ['all', 'servants']
+        && d.registrationOpen is bool
+        && (d.capacity == null || (d.capacity is int && d.capacity > 0 && d.capacity <= 5000));
+    }
+
+    match /events/{id} {
+      allow read: if isActive() && (resource.data.audience == 'all' || isServant());
+      // Le nombre d'inscrits (registeredCount) n'est tenu que par le serveur.
+      allow create: if isLeader()
+        && request.resource.data.keys().hasOnly(['title', 'description', 'location', 'startsAt', 'audience', 'capacity', 'registrationOpen', 'registeredCount', 'createdBy', 'createdAt'])
+        && validEvent(request.resource.data)
+        && request.resource.data.registeredCount == 0
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.createdAt == request.time;
+      allow update: if isLeader()
+        && onlyChanged(['title', 'description', 'location', 'startsAt', 'audience', 'capacity', 'registrationOpen'])
+        && validEvent(request.resource.data);
+      allow delete: if isLeader();
+
+      // Inscription : un document par membre (identifiant = son uid).
+      match /registrations/{uid} {
+        allow read: if signedIn() && (request.auth.uid == uid || isLeader());
+        allow create: if isActive()
+          && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['uid', 'name', 'guests', 'createdAt'])
+          && request.resource.data.uid == uid
+          && request.resource.data.name is string && request.resource.data.name.size() <= 130
+          && request.resource.data.guests is int && request.resource.data.guests >= 0 && request.resource.data.guests <= 5
+          && request.resource.data.createdAt == request.time
+          && eventDoc(id).registrationOpen == true
+          && (eventDoc(id).audience == 'all' || isServant())
+          && (eventDoc(id).capacity == null || eventDoc(id).registeredCount + 1 + request.resource.data.guests <= eventDoc(id).capacity);
+        allow delete: if signedIn() && (request.auth.uid == uid || isLeader());
+      }
+    }
+
+    // ——— Parcours de baptême ———
+    // Une demande par membre (identifiant = son uid), suivie par les responsables.
+    match /baptisms/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isLeader());
+      allow create: if isActive()
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['uid', 'name', 'motivation', 'status', 'steps', 'createdAt', 'updatedAt'])
+        && request.resource.data.uid == uid
+        && request.resource.data.name is string && request.resource.data.name.size() <= 130
+        && request.resource.data.motivation is string && request.resource.data.motivation.size() >= 10 && request.resource.data.motivation.size() <= 3000
+        && request.resource.data.status == 'requested'
+        && request.resource.data.steps == []
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+      allow update: if signedIn() && (
+        // Le membre peut seulement annuler sa demande
+        (request.auth.uid == uid
+          && onlyChanged(['status', 'updatedAt'])
+          && request.resource.data.status == 'cancelled'
+          && request.resource.data.updatedAt == request.time)
+        // Les responsables font avancer le parcours
+        || (isLeader()
+          && onlyChanged(['status', 'steps', 'scheduledAt', 'leaderMessage', 'updatedAt'])
+          && request.resource.data.status in ['requested', 'interview', 'preparation', 'scheduled', 'baptized', 'cancelled']
+          && request.resource.data.steps is list && request.resource.data.steps.size() <= 10
+          && (!('scheduledAt' in request.resource.data) || request.resource.data.scheduledAt == null || request.resource.data.scheduledAt is timestamp)
+          && (!('leaderMessage' in request.resource.data) || (request.resource.data.leaderMessage is string && request.resource.data.leaderMessage.size() <= 2000))
+          && request.resource.data.updatedAt == request.time)
+      );
+      allow delete: if signedIn() && (request.auth.uid == uid || isAdmin());
+    }
+
     // Tout le reste est fermé tant que les modules suivants ne sont pas ouverts.
     match /{document=**} {
       allow read, write: if false;

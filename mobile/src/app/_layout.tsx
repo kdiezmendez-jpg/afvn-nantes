@@ -64,6 +64,11 @@ export default function RootLayout() {
         <Stack.Screen name="prieres/equipe" options={{ title: "Équipe de prière" }} />
         <Stack.Screen name="actualites/index" options={{ title: "Actualités" }} />
         <Stack.Screen name="actualites/nouvelle" options={{ title: "Publier", presentation: "modal" }} />
+        <Stack.Screen name="evenements/index" options={{ title: "Événements" }} />
+        <Stack.Screen name="evenements/[id]" options={{ title: "Événement" }} />
+        <Stack.Screen name="evenements/nouveau" options={{ title: "Nouvel événement", presentation: "modal" }} />
+        <Stack.Screen name="bapteme" options={{ title: "Mon baptême" }} />
+        <Stack.Screen name="admin/baptemes" options={{ title: "Baptêmes" }} />
       </Stack>
     </AuthProvider>
   );

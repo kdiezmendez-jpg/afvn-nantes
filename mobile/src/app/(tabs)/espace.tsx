@@ -1,5 +1,5 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { router } from "expo-router";
+import { router, type Href } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { Body, Btn, Card, Eyebrow, Hero, RowLink, Screen, Section, Title, type IconName } from "@/components/ui";
@@ -11,11 +11,11 @@ import { call, tap } from "@/lib/open";
 import { colors, fonts, space } from "@/lib/theme";
 
 // Modules de l'espace membre, ouverts au fil des étapes du projet.
-const modules: { icon: IconName; title: string; text: string; soon?: boolean; href?: "/prieres" | "/actualites" }[] = [
+const modules: { icon: IconName; title: string; text: string; soon?: boolean; href?: Href }[] = [
   { icon: "sparkles", title: "Mes demandes de prière", text: "Confiez un sujet à l'équipe pastorale et suivez-le.", href: "/prieres" },
   { icon: "newspaper-outline", title: "Actualités", text: "Les annonces de l'église, avec notifications.", href: "/actualites" },
-  { icon: "calendar-outline", title: "Événements & inscriptions", text: "S'inscrire à ESCHATOS, aux séminaires…", soon: true },
-  { icon: "water-outline", title: "Mon baptême", text: "Demander le baptême et suivre la préparation.", soon: true },
+  { icon: "calendar-outline", title: "Événements & inscriptions", text: "S'inscrire à ESCHATOS, aux séminaires…", href: "/evenements" },
+  { icon: "water-outline", title: "Mon baptême", text: "Demander le baptême et suivre la préparation.", href: "/bapteme" },
   { icon: "school-outline", title: "Formation des serviteurs", text: "Transformation holistique centrée sur la Vérité.", soon: true },
   { icon: "people-outline", title: "Ministères & groupes", text: "Rejoindre un ministère, échanger avec son groupe.", soon: true },
   { icon: "chatbubbles-outline", title: "Annuaire & messagerie", text: "Retrouver les frères et sœurs, s'écrire.", soon: true },
@@ -109,6 +109,8 @@ export default function Espace() {
           <View style={{ marginTop: space.md, gap: 10 }}>
             {isPrayerTeam(member) ? <RowLink icon="sparkles" title="Équipe de prière" subtitle="Porter les demandes confiées" onPress={() => router.push("/prieres/equipe")} /> : null}
             {isLeader(member) ? <RowLink icon="megaphone-outline" title="Publier une actualité" subtitle="Avec notification aux membres" onPress={() => router.push("/actualites/nouvelle")} /> : null}
+            {isLeader(member) ? <RowLink icon="calendar-outline" title="Créer un événement" subtitle="Avec inscriptions et rappel la veille" onPress={() => router.push("/evenements/nouveau")} /> : null}
+            {isLeader(member) ? <RowLink icon="water-outline" title="Demandes de baptême" subtitle="Accompagner les candidats" onPress={() => router.push("/admin/baptemes")} /> : null}
             {isAdmin(member) ? <RowLink icon="shield-checkmark-outline" title="Gérer les membres" subtitle="Valider les inscriptions, attribuer les rôles" onPress={() => router.push("/admin/membres")} /> : null}
           </View>
         </Section>
@@ -155,7 +157,7 @@ function PushCard({ uid }: { uid: string }) {
   );
 }
 
-function ModuleRow({ icon, title, text, soon, href }: { icon: IconName; title: string; text: string; soon?: boolean; href?: "/prieres" | "/actualites" }) {
+function ModuleRow({ icon, title, text, soon, href }: { icon: IconName; title: string; text: string; soon?: boolean; href?: Href }) {
   if (href && !soon) {
     return (
       <Pressable accessibilityRole="button" onPress={() => { tap(); router.push(href); }} style={({ pressed }) => [styles.module, pressed && { backgroundColor: "#efe8da" }]}>

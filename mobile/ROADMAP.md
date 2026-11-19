@@ -17,9 +17,13 @@ Chaque étape est livrée testée (règles de sécurité + parcours complet) ava
   (à l'équipe, sans jamais le contenu), « on prie pour vous ». Appareils désinstallés nettoyés automatiquement.
 - 46 tests de règles de sécurité + 10 tests de notifications + parcours complet testé dans le navigateur.
 
-## Étape 3 — Événements & baptême
-- Inscriptions aux événements (ESCHATOS, séminaires, Worship Sessions), confirmation, rappel.
-- **Parcours de baptême** : demande → entretien → préparation (enseignements) → date fixée → baptisé.
+## ✅ Étape 3 — Événements & baptême (livrée)
+- Événements créés par les responsables (date, lieu, places, public), inscription avec accompagnants,
+  compteur tenu par le serveur, fermeture des inscriptions, liste des inscrits, **rappel la veille à 18h**.
+- **Parcours de baptême** : demande → entretien → préparation (5 étapes avec versets) → date fixée → baptisé ;
+  les responsables cochent les étapes, fixent la date et laissent un message ; le membre est notifié à chaque étape.
+- 69 tests de règles de sécurité + 19 tests des fonctions serveur + parcours complet testé.
+- Le contenu des étapes de préparation (`mobile/src/lib/baptism.ts`) est une base à relire par le pasteur.
 
 ## Étape 4 — Formation des serviteurs
 - Parcours « Transformation holistique centrée sur la Vérité » : modules et leçons tirés des manuels,

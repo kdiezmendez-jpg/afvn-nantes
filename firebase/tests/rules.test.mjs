@@ -2,7 +2,7 @@
 // Lancer : cd firebase && npx firebase emulators:exec --only firestore "node tests/rules.test.mjs"
 import { assertFails, assertSucceeds, initializeTestEnvironment } from "@firebase/rules-unit-testing";
 import { readFileSync } from "node:fs";
-import { arrayUnion, collection, deleteDoc, doc, getDoc, getDocs, query, serverTimestamp, setDoc, updateDoc, where } from "firebase/firestore";
+import { arrayUnion, collection, Timestamp, deleteDoc, doc, getDoc, getDocs, query, serverTimestamp, setDoc, updateDoc, where } from "firebase/firestore";
 
 const env = await initializeTestEnvironment({
   projectId: "demo-afvn",
@@ -95,6 +95,36 @@ const dev = (t, extra = {}) => ({ token: t, platform: "android", updatedAt: serv
 await check("Appareil : le membre enregistre son jeton", assertSucceeds(setDoc(doc(paul, "users/visible/devices/ExponentPushToken[abc]"), dev("ExponentPushToken[abc]"))));
 await check("Appareil : jeton sur le compte d'un autre refusé", assertFails(setDoc(doc(paul, "users/hidden/devices/ExponentPushToken[x]"), dev("ExponentPushToken[x]"))));
 await check("Appareil : un admin ne lit pas les jetons des membres", assertFails(getDoc(doc(admin, "users/visible/devices/ExponentPushToken[abc]"))));
+
+// ——— Étape 3 : événements, inscriptions, baptême ———
+const ev = (extra = {}) => ({ title: "ESCHATOS 2027", description: "Conférence", location: "69 bis rue du Bêle", startsAt: Timestamp.fromDate(new Date("2027-03-01T09:30:00Z")), audience: "all", capacity: 3, registrationOpen: true, registeredCount: 0, createdBy: "leader", createdAt: serverTimestamp(), ...extra });
+const reg = (uid, guests = 0) => ({ uid, name: "Paul V", guests, createdAt: serverTimestamp() });
+await check("Événement : un responsable crée un événement", assertSucceeds(setDoc(doc(esther, "events/e1"), ev())));
+await check("Événement : un membre ne peut pas en créer", assertFails(setDoc(doc(paul, "events/e2"), ev({ createdBy: "visible" }))));
+await check("Événement : impossible de créer avec des inscrits fictifs", assertFails(setDoc(doc(esther, "events/e3"), ev({ registeredCount: 10 }))));
+await check("Événement : un membre actif le lit", assertSucceeds(getDoc(doc(paul, "events/e1"))));
+await check("Inscription : un membre s'inscrit", assertSucceeds(setDoc(doc(paul, "events/e1/registrations/visible"), reg("visible"))));
+await check("Inscription : impossible d'inscrire quelqu'un d'autre", assertFails(setDoc(doc(paul, "events/e1/registrations/hidden"), reg("hidden"))));
+await check("Inscription : plus de 5 accompagnants refusé", assertFails(setDoc(doc(as("hidden", "h@x.fr"), "events/e1/registrations/hidden"), reg("hidden", 6))));
+await check("Inscription : un autre membre ne voit pas l'inscription de Paul", assertFails(getDoc(doc(as("hidden", "h@x.fr"), "events/e1/registrations/visible"))));
+await check("Inscription : le responsable voit la liste des inscrits", assertSucceeds(getDocs(collection(esther, "events/e1/registrations"))));
+await check("Inscription : un membre ne liste pas les inscrits", assertFails(getDocs(collection(paul, "events/e1/registrations"))));
+await check("Événement : un membre ne modifie pas le compteur", assertFails(updateDoc(doc(paul, "events/e1"), { registeredCount: 99 })));
+await check("Événement : même un responsable ne modifie pas le compteur", assertFails(updateDoc(doc(esther, "events/e1"), { registeredCount: 99 })));
+await env.withSecurityRulesDisabled(async (ctx) => { await updateDoc(doc(ctx.firestore(), "events/e1"), { registeredCount: 3 }); });
+await check("Inscription : refusée quand l'événement est complet", assertFails(setDoc(doc(as("hidden", "h@x.fr"), "events/e1/registrations/hidden"), reg("hidden"))));
+await check("Inscription : désinscription possible", assertSucceeds(deleteDoc(doc(paul, "events/e1/registrations/visible"))));
+await check("Inscription : refusée si les inscriptions sont fermées", assertSucceeds(setDoc(doc(esther, "events/e4"), ev({ registrationOpen: false, capacity: null }))).then(() => assertFails(setDoc(doc(paul, "events/e4/registrations/visible"), reg("visible")))));
+
+const bap = (uid, extra = {}) => ({ uid, name: "Paul V", motivation: "Je veux suivre Jésus et témoigner de ma foi.", status: "requested", steps: [], createdAt: serverTimestamp(), updatedAt: serverTimestamp(), ...extra });
+await check("Baptême : un membre fait sa demande", assertSucceeds(setDoc(doc(paul, "baptisms/visible"), bap("visible"))));
+await check("Baptême : impossible de se déclarer déjà « fixé »", assertFails(setDoc(doc(as("hidden", "h@x.fr"), "baptisms/hidden"), bap("hidden", { status: "scheduled" }))));
+await check("Baptême : un autre membre ne lit pas la demande", assertFails(getDoc(doc(as("hidden", "h@x.fr"), "baptisms/visible"))));
+await check("Baptême : l'intercesseur (non responsable) ne la lit pas", assertFails(getDoc(doc(ruth, "baptisms/visible"))));
+await check("Baptême : le responsable fixe la date et coche une étape", assertSucceeds(updateDoc(doc(esther, "baptisms/visible"), { status: "scheduled", steps: ["interview"], scheduledAt: Timestamp.fromDate(new Date("2027-01-10T09:30:00Z")), leaderMessage: "Rendez-vous à 9h", updatedAt: serverTimestamp() })));
+await check("Baptême : le membre ne peut pas se déclarer baptisé", assertFails(updateDoc(doc(paul, "baptisms/visible"), { status: "baptized", updatedAt: serverTimestamp() })));
+await check("Baptême : le membre peut annuler sa demande", assertSucceeds(updateDoc(doc(paul, "baptisms/visible"), { status: "cancelled", updatedAt: serverTimestamp() })));
+await check("Baptême : le responsable liste les demandes", assertSucceeds(getDocs(collection(esther, "baptisms"))));
 
 for (const [s, n] of results) console.log(s, n);
 await env.cleanup();

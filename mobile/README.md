@@ -47,7 +47,7 @@ Vérifications : `npm run typecheck` et `npm run lint`.
    - lier l'appli à Expo (`npx eas-cli@latest init`), puis donner à EAS les accès d'envoi :
      Android → fichier de compte de service FCM (`eas credentials`), iOS → clé APNs créée automatiquement par EAS.
 
-Tests (Java requis) : `cd firebase && npm run test:rules` (46 tests de sécurité) et `npm run test:functions` (10 tests de notifications).
+Tests (Java requis) : `cd firebase && npm run test:rules` (69 tests de sécurité) et `npm run test:functions` (19 tests des fonctions serveur).
 
 ## Publier sur l'App Store et Google Play
 
