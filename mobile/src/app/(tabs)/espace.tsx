@@ -17,8 +17,9 @@ const modules: { icon: IconName; title: string; text: string; soon?: boolean; hr
   { icon: "calendar-outline", title: "Événements & inscriptions", text: "S'inscrire à ESCHATOS, aux séminaires…", href: "/evenements" },
   { icon: "water-outline", title: "Mon baptême", text: "Demander le baptême et suivre la préparation.", href: "/bapteme" },
   { icon: "school-outline", title: "Formation des serviteurs", text: "Transformation Centrée sur la Vérité : modules, manuels, directs.", href: "/formation", servantsOnly: true },
-  { icon: "people-outline", title: "Ministères & groupes", text: "Rejoindre un ministère, échanger avec son groupe.", soon: true },
-  { icon: "chatbubbles-outline", title: "Annuaire & messagerie", text: "Retrouver les frères et sœurs, s'écrire.", soon: true },
+  { icon: "people-outline", title: "Ministères & groupes", text: "Rejoindre un ministère, échanger avec son groupe.", href: "/ministeres" },
+  { icon: "chatbubbles-outline", title: "Mes messages", text: "Écrire aux frères et sœurs en privé.", href: "/messages" },
+  { icon: "book-outline", title: "Annuaire", text: "Retrouver les membres de l'église.", href: "/annuaire" },
 ];
 
 export default function Espace() {
@@ -112,6 +113,7 @@ export default function Espace() {
             {isLeader(member) ? <RowLink icon="calendar-outline" title="Créer un événement" subtitle="Avec inscriptions et rappel la veille" onPress={() => router.push("/evenements/nouveau")} /> : null}
             {isLeader(member) ? <RowLink icon="water-outline" title="Demandes de baptême" subtitle="Accompagner les candidats" onPress={() => router.push("/admin/baptemes")} /> : null}
             {isAdmin(member) ? <RowLink icon="shield-checkmark-outline" title="Gérer les membres" subtitle="Valider les inscriptions, attribuer les rôles" onPress={() => router.push("/admin/membres")} /> : null}
+            {isAdmin(member) ? <RowLink icon="flag-outline" title="Contenus signalés" subtitle="Modération des échanges" onPress={() => router.push("/admin/signalements")} /> : null}
           </View>
         </Section>
       ) : null}

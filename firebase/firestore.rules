@@ -296,6 +296,110 @@ service cloud.firestore {
       }
     }
 
+    // ——— Ministères & groupes ———
+    function inMinistry(mid) {
+      return exists(/databases/$(database)/documents/ministries/$(mid)/members/$(request.auth.uid));
+    }
+    match /ministries/{mid} {
+      allow read: if isActive();
+      allow create, update: if isLeader()
+        && request.resource.data.keys().hasOnly(['name', 'description', 'createdAt'])
+        && request.resource.data.name is string && request.resource.data.name.size() >= 2 && request.resource.data.name.size() <= 60
+        && request.resource.data.description is string && request.resource.data.description.size() <= 500;
+      allow delete: if isLeader();
+
+      // Chacun rejoint ou quitte un ministère ; les responsables peuvent retirer un membre.
+      match /members/{uid} {
+        allow read: if isActive();
+        allow create: if isActive() && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['uid', 'name', 'joinedAt'])
+          && request.resource.data.uid == uid
+          && request.resource.data.name is string && request.resource.data.name.size() <= 130
+          && request.resource.data.joinedAt == request.time;
+        allow delete: if signedIn() && (request.auth.uid == uid || isLeader());
+      }
+
+      // Discussion du groupe : réservée aux membres du ministère (et aux responsables).
+      match /messages/{id} {
+        allow read: if isActive() && (inMinistry(mid) || isLeader());
+        allow create: if isActive() && inMinistry(mid)
+          && request.resource.data.keys().hasOnly(['uid', 'name', 'text', 'createdAt'])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.name is string && request.resource.data.name.size() <= 130
+          && request.resource.data.text is string && request.resource.data.text.size() >= 1 && request.resource.data.text.size() <= 2000
+          && request.resource.data.createdAt == request.time;
+        allow delete: if signedIn() && (resource.data.uid == request.auth.uid || isLeader());
+      }
+    }
+
+    // ——— Messagerie privée ———
+    // Conversation entre deux membres : identifiant = les deux uid triés, séparés par « _ ».
+    function userDoc(uid) {
+      return get(/databases/$(database)/documents/users/$(uid)).data;
+    }
+    function reachable(uid) {
+      return userDoc(uid).status == 'active'
+        && (userDoc(uid).directoryVisible == true || userDoc(uid).roles.hasAny(['leader', 'admin']) || isLeader());
+    }
+    function hasBlocked(owner, other) {
+      return exists(/databases/$(database)/documents/users/$(owner)/blocked/$(other));
+    }
+    match /conversations/{cid} {
+      allow read: if isActive() && request.auth.uid in resource.data.members;
+      allow create: if isActive()
+        && request.resource.data.keys().hasOnly(['members', 'names', 'lastText', 'updatedAt'])
+        && request.resource.data.members is list && request.resource.data.members.size() == 2
+        && request.auth.uid in request.resource.data.members
+        && request.resource.data.members[0] < request.resource.data.members[1]
+        && cid == request.resource.data.members[0] + '_' + request.resource.data.members[1]
+        && reachable(request.resource.data.members[0] == request.auth.uid ? request.resource.data.members[1] : request.resource.data.members[0])
+        && request.resource.data.names is map
+        && request.resource.data.lastText is string && request.resource.data.lastText.size() <= 200
+        && request.resource.data.updatedAt == request.time;
+      allow update: if isActive() && request.auth.uid in resource.data.members
+        && onlyChanged(['lastText', 'updatedAt'])
+        && request.resource.data.lastText is string && request.resource.data.lastText.size() <= 200
+        && request.resource.data.updatedAt == request.time;
+
+      match /messages/{id} {
+        function conv() {
+          return get(/databases/$(database)/documents/conversations/$(cid)).data;
+        }
+        allow read: if isActive() && request.auth.uid in conv().members;
+        allow create: if isActive() && request.auth.uid in conv().members
+          && request.resource.data.keys().hasOnly(['uid', 'text', 'createdAt'])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.text is string && request.resource.data.text.size() >= 1 && request.resource.data.text.size() <= 2000
+          && request.resource.data.createdAt == request.time
+          // Un membre qui vous a bloqué ne reçoit plus vos messages.
+          && !hasBlocked(conv().members[0] == request.auth.uid ? conv().members[1] : conv().members[0], request.auth.uid);
+        allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+      }
+    }
+
+    // Liste de blocage personnelle
+    match /users/{uid}/blocked/{other} {
+      allow read, delete: if signedIn() && request.auth.uid == uid;
+      allow create: if isActive() && request.auth.uid == uid && other != uid
+        && request.resource.data.keys().hasOnly(['createdAt'])
+        && request.resource.data.createdAt == request.time;
+    }
+
+    // ——— Modération : signalements ———
+    match /reports/{id} {
+      allow read, update: if isAdmin();
+      allow create: if isActive()
+        && request.resource.data.keys().hasOnly(['reporterUid', 'targetUid', 'targetPath', 'excerpt', 'reason', 'status', 'createdAt'])
+        && request.resource.data.reporterUid == request.auth.uid
+        && request.resource.data.targetUid is string
+        && request.resource.data.targetPath is string && request.resource.data.targetPath.size() <= 300
+        && request.resource.data.excerpt is string && request.resource.data.excerpt.size() <= 300
+        && request.resource.data.reason in ['offensive', 'harassment', 'spam', 'other']
+        && request.resource.data.status == 'open'
+        && request.resource.data.createdAt == request.time;
+      allow delete: if isAdmin();
+    }
+
     // Tout le reste est fermé tant que les modules suivants ne sont pas ouverts.
     match /{document=**} {
       allow read, write: if false;

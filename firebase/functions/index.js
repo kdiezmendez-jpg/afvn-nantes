@@ -145,3 +145,23 @@ export const onTrainingSessionCreated = onDocumentCreated("trainingSessions/{id}
     url: `/formation/session/${event.params.id}`,
   });
 });
+
+// ——— Étape 5 : messagerie et modération ———
+// 10. Message privé → le destinataire est prévenu (aperçu court), sauf s'il a bloqué l'expéditeur.
+export const onPrivateMessage = onDocumentCreated("conversations/{cid}/messages/{id}", async (event) => {
+  const m = event.data?.data();
+  if (!m) return;
+  const conv = (await db.doc(`conversations/${event.params.cid}`).get()).data();
+  if (!conv) return;
+  const to = conv.members.find((u) => u !== m.uid);
+  if (!to || (await db.doc(`users/${to}/blocked/${m.uid}`).get()).exists) return;
+  const from = conv.names?.[m.uid] ?? "Un membre";
+  await notify([to], { title: from, body: m.text.length > 100 ? `${m.text.slice(0, 100)}…` : m.text, url: `/messages/${event.params.cid}` });
+});
+
+// 11. Signalement → les administrateurs sont prévenus pour modérer rapidement.
+export const onReport = onDocumentCreated("reports/{id}", async (event) => {
+  const r = event.data?.data();
+  if (!r) return;
+  await notify(await activeMembers(["admin"]), { title: "Contenu signalé", body: "Un membre a signalé un contenu à vérifier.", url: "/admin/signalements" });
+});

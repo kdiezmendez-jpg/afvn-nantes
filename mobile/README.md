@@ -47,7 +47,7 @@ Vérifications : `npm run typecheck` et `npm run lint`.
    - lier l'appli à Expo (`npx eas-cli@latest init`), puis donner à EAS les accès d'envoi :
      Android → fichier de compte de service FCM (`eas credentials`), iOS → clé APNs créée automatiquement par EAS.
 
-Tests (Java requis) : `cd firebase && npm run test:rules` (91 tests de sécurité), `npm run test:storage` (8 tests des fichiers) et `npm run test:functions` (19 tests des fonctions serveur).
+Tests (Java requis) : `cd firebase && npm run test:rules` (118 tests de sécurité), `npm run test:storage` (8 tests des fichiers) et `npm run test:functions` (24 tests des fonctions serveur).
 
 **Stockage des manuels** : dans la console Firebase, activer **Storage** (emplacement europe-west9), puis `npm run deploy:rules` déploie aussi les règles des fichiers. Les formateurs déposent ensuite les PDF depuis l'appli (Formation → module → « Ajouter un PDF »).
 
@@ -75,6 +75,8 @@ Identifiants de l'application : `fr.afvn.nantes` (iOS et Android).
 - **Suppression de compte** : Espace → Mon compte → Supprimer mon compte (exigé par Apple et Google).
 - **Compte de démonstration** pour la revue Apple : créer un membre validé et le fournir dans App Store Connect.
 - **Dons** : ouverts dans Safari/Chrome via la plateforme de don (règle 3.2.2 de l'App Store), jamais en achat intégré.
+- **Contenus des membres (messagerie, groupes)** — à indiquer à Apple (règle 1.2) : acceptation des conditions à
+  l'inscription, signalement et blocage par appui long, modération par les administrateurs sous 24 h, suspension des comptes.
 
 ## Feuille de route de l'espace membre
 

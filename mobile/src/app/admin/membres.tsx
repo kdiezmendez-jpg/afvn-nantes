@@ -11,6 +11,7 @@ const tabs: { key: Status; label: string }[] = [
   { key: "pending", label: "En attente" },
   { key: "active", label: "Membres" },
   { key: "rejected", label: "Refusés" },
+  { key: "suspended", label: "Suspendus" },
 ];
 const assignable: Role[] = ["servant", "intercessor", "trainer", "leader", "admin"];
 

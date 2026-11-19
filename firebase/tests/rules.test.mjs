@@ -158,6 +158,44 @@ await check("Questions : impossible de la marquer « répondue » soi-même", as
 await check("Questions : le formateur la marque « répondue »", assertSucceeds(updateDoc(doc(trainer, "trainingSessions/s1/questions/q1"), { answered: true })));
 await check("Questions : un simple membre ne pose pas de question", assertFails(setDoc(doc(paul, "trainingSessions/s1/questions/q2"), q("visible"))));
 
+// ——— Étape 5 : ministères, messagerie, modération ———
+await check("Ministère : un responsable crée un ministère", assertSucceeds(setDoc(doc(esther, "ministries/louange"), { name: "Louange", description: "Servir par le chant", createdAt: serverTimestamp() })));
+await check("Ministère : un membre ne peut pas en créer", assertFails(setDoc(doc(paul, "ministries/x"), { name: "X", description: "", createdAt: serverTimestamp() })));
+const join = (uid) => ({ uid, name: "Paul V", joinedAt: serverTimestamp() });
+await check("Ministère : un membre le rejoint", assertSucceeds(setDoc(doc(paul, "ministries/louange/members/visible"), join("visible"))));
+await check("Ministère : impossible d'y inscrire quelqu'un d'autre", assertFails(setDoc(doc(paul, "ministries/louange/members/hidden"), join("hidden"))));
+const msg = (uid, extra = {}) => ({ uid, name: "Paul V", text: "Répétition samedi 15h", createdAt: serverTimestamp(), ...extra });
+await check("Groupe : un membre du ministère écrit dans la discussion", assertSucceeds(setDoc(doc(paul, "ministries/louange/messages/m1"), msg("visible"))));
+await check("Groupe : un non-membre ne peut pas écrire", assertFails(setDoc(doc(as("hidden", "h@x.fr"), "ministries/louange/messages/m2"), msg("hidden"))));
+await check("Groupe : un non-membre ne lit pas la discussion", assertFails(getDoc(doc(as("hidden", "h@x.fr"), "ministries/louange/messages/m1"))));
+await check("Groupe : un responsable lit la discussion (modération)", assertSucceeds(getDoc(doc(esther, "ministries/louange/messages/m1"))));
+await check("Groupe : un responsable supprime un message", assertSucceeds(deleteDoc(doc(esther, "ministries/louange/messages/m1"))));
+
+await check("Annuaire : un membre liste les profils visibles", assertSucceeds(getDocs(query(collection(paul, "users"), where("status", "==", "active"), where("directoryVisible", "==", true)))));
+await check("Annuaire : lister sans le filtre « visible » est refusé", assertFails(getDocs(query(collection(paul, "users"), where("status", "==", "active")))));
+
+const conv = (a, b, extra = {}) => ({ members: [a, b].sort(), names: { [a]: "A", [b]: "B" }, lastText: "Bonjour", updatedAt: serverTimestamp(), ...extra });
+// « admin » est visible dans l'annuaire, « hidden » ne l'est pas.
+await check("Messagerie : écrire à un membre visible dans l'annuaire", assertSucceeds(setDoc(doc(paul, "conversations/admin_visible"), conv("visible", "admin"))));
+await check("Messagerie : écrire à un membre masqué est refusé", assertFails(setDoc(doc(paul, "conversations/hidden_visible"), conv("visible", "hidden"))));
+await check("Messagerie : un responsable peut écrire à tout membre", assertSucceeds(setDoc(doc(esther, "conversations/hidden_leader"), conv("leader", "hidden"))));
+await check("Messagerie : identifiant de conversation truqué refusé", assertFails(setDoc(doc(paul, "conversations/zzz"), conv("visible", "admin"))));
+const pm = (uid) => ({ uid, text: "Que Dieu te bénisse", createdAt: serverTimestamp() });
+await check("Messagerie : envoyer un message", assertSucceeds(setDoc(doc(paul, "conversations/admin_visible/messages/p1"), pm("visible"))));
+await check("Messagerie : un tiers ne lit pas la conversation", assertFails(getDoc(doc(ruth, "conversations/admin_visible/messages/p1"))));
+await check("Messagerie : un tiers ne peut pas y écrire", assertFails(setDoc(doc(ruth, "conversations/admin_visible/messages/p2"), pm("interc"))));
+await check("Messagerie : lister ses conversations", assertSucceeds(getDocs(query(collection(paul, "conversations"), where("members", "array-contains", "visible")))));
+await check("Blocage : l'administrateur bloque Paul", assertSucceeds(setDoc(doc(admin, "users/admin/blocked/visible"), { createdAt: serverTimestamp() })));
+await check("Blocage : Paul ne peut plus lui écrire", assertFails(setDoc(doc(paul, "conversations/admin_visible/messages/p3"), pm("visible"))));
+await check("Blocage : impossible de bloquer au nom d'un autre", assertFails(setDoc(doc(paul, "users/admin/blocked/hidden"), { createdAt: serverTimestamp() })));
+
+const rep = (extra = {}) => ({ reporterUid: "visible", targetUid: "hidden", targetPath: "ministries/louange/messages/m9", excerpt: "…", reason: "offensive", status: "open", createdAt: serverTimestamp(), ...extra });
+await check("Signalement : un membre signale un contenu", assertSucceeds(setDoc(doc(paul, "reports/r1"), rep())));
+await check("Signalement : impossible au nom d'un autre", assertFails(setDoc(doc(paul, "reports/r2"), rep({ reporterUid: "hidden" }))));
+await check("Signalement : un membre ne lit pas les signalements", assertFails(getDoc(doc(paul, "reports/r1"))));
+await check("Signalement : l'administrateur les lit", assertSucceeds(getDoc(doc(admin, "reports/r1"))));
+await check("Modération : un membre suspendu perd l'accès", assertSucceeds(env.withSecurityRulesDisabled(async (ctx) => { await updateDoc(doc(ctx.firestore(), "users/hidden"), { status: "suspended" }); })).then(() => assertFails(getDoc(doc(as("hidden", "h@x.fr"), "news/n1")))));
+
 for (const [s, n] of results) console.log(s, n);
 await env.cleanup();
 process.exit(results.some(([s]) => s !== "OK  ") ? 1 : 0);

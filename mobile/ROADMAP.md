@@ -39,10 +39,15 @@ Chaque étape est livrée testée (règles de sécurité + parcours complet) ava
 - Appel vidéo direct entre téléphones (WebRTC, jusqu'à 5–6 personnes), signalisation par Firebase, gratuit.
 - Nécessite une version de développement de l'appli (`npx expo run:android`).
 
-## Étape 5 — Ministères, groupes, annuaire & messagerie
-- Rejoindre un ministère, planning de service, discussion de groupe.
-- Annuaire des membres (avec leur accord) et messagerie privée.
-- Modération exigée par les stores : signaler / bloquer, charte d'échange, suppression des contenus abusifs.
+## ✅ Étape 5 — Ministères, groupes, annuaire & messagerie (livrée)
+- Ministères (créés en un geste à partir de ceux du site), adhésion libre, **discussion de groupe** réservée aux membres.
+- **Annuaire** : uniquement les membres qui l'acceptent (désactivé par défaut), recherche par nom.
+- **Messagerie privée** : on écrit aux membres visibles dans l'annuaire (les responsables peuvent écrire à tous) ;
+  notification au destinataire.
+- **Modération** (exigée par l'App Store, règle 1.2, et Google Play) : appui long sur un message → signaler,
+  bloquer, supprimer ; écran « Contenus signalés » pour les administrateurs (supprimer, suspendre l'auteur, classer) ;
+  un membre bloqué ne peut plus vous écrire ; un membre suspendu perd tout accès.
+- 118 tests de règles de sécurité + 24 tests des fonctions serveur + parcours complet testé.
 
 ## Visioconférence : solution retenue (gratuite, sans Zoom ni Meet)
 - **Petits groupes (jusqu'à 5–6 personnes)** : appel vidéo direct entre téléphones (WebRTC) dans l'appli ;

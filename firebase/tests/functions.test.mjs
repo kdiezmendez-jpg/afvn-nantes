@@ -117,6 +117,21 @@ await created(fns.onTrainingSessionCreated, "trainingSessions/s1", { id: "s1" },
 check("Session de formation → les serviteurs sont prévenus", to("ExponentPushToken[ruth]").some((m) => m.title === "Formation en direct" && m.body.includes("lundi 1 février")));
 check("Session de formation → pas envoyée aux simples membres", !to("ExponentPushToken[paul]").some((m) => m.title === "Formation en direct"));
 
+// 10. Messagerie privée
+await db.doc("conversations/paul_ruth").set({ members: ["paul", "ruth"], names: { paul: "Paul T", ruth: "Ruth T" }, lastText: "", updatedAt: new Date() });
+await created(fns.onPrivateMessage, "conversations/paul_ruth/messages/x1", { cid: "paul_ruth", id: "x1" }, { uid: "paul", text: "Merci pour ta prière !", createdAt: new Date() });
+check("Message privé → le destinataire est prévenu avec le nom de l'expéditeur", to("ExponentPushToken[ruth]").some((m) => m.title === "Paul T" && m.body === "Merci pour ta prière !"));
+check("Message privé → l'expéditeur ne reçoit rien", !to("ExponentPushToken[paul]").some((m) => m.title === "Paul T"));
+await db.doc("users/ruth/blocked/paul").set({ createdAt: new Date() });
+const before = to("ExponentPushToken[ruth]").length;
+await created(fns.onPrivateMessage, "conversations/paul_ruth/messages/x2", { cid: "paul_ruth", id: "x2" }, { uid: "paul", text: "Encore moi", createdAt: new Date() });
+check("Message privé → aucune notification si le destinataire a bloqué l'expéditeur", to("ExponentPushToken[ruth]").length === before);
+
+// 11. Signalement
+await created(fns.onReport, "reports/r1", { id: "r1" }, { reporterUid: "paul", targetUid: "ruth", targetPath: "x", excerpt: "…", reason: "spam", status: "open", createdAt: new Date() });
+check("Signalement → les administrateurs sont prévenus", to("ExponentPushToken[pasteur]").some((m) => m.title === "Contenu signalé"));
+check("Signalement → les membres ne sont pas prévenus", !to("ExponentPushToken[esther]").some((m) => m.title === "Contenu signalé"));
+
 for (const [s, n] of results) console.log(s, n);
 server.close();
 process.exit(results.some(([s]) => s !== "OK  ") ? 1 : 0);
