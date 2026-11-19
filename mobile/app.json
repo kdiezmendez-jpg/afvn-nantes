@@ -1,0 +1,83 @@
+{
+  "expo": {
+    "name": "AFVN Nantes",
+    "slug": "afvn-nantes",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "afvn",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#f6f1e7",
+    "description": "L'application de l'\u00c9glise AFVN de Nantes : horaires et rappels des cultes, live et pr\u00e9dications, demande de pri\u00e8re et accueil des nouveaux.",
+    "ios": {
+      "bundleIdentifier": "fr.afvn.nantes",
+      "buildNumber": "1",
+      "supportsTablet": true,
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "privacyManifests": {
+        "NSPrivacyTracking": false,
+        "NSPrivacyTrackingDomains": [],
+        "NSPrivacyCollectedDataTypes": []
+      }
+    },
+    "android": {
+      "package": "fr.afvn.nantes",
+      "versionCode": 1,
+      "allowBackup": false,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-foreground.png",
+        "backgroundColor": "#03141f"
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.RECORD_AUDIO"
+      ],
+      "blockedPermissions": [
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION"
+      ],
+      "predictiveBackGestureEnabled": true
+    },
+    "web": {
+      "output": "single",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#03141f",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 180
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "enableRemoteNotifications": true,
+          "color": "#efb54a"
+        }
+      ],
+      [
+        "@config-plugins/react-native-webrtc",
+        {
+          "cameraPermission": "La cam\u00e9ra est utilis\u00e9e pour les appels vid\u00e9o de formation en petit groupe, uniquement pendant l'appel.",
+          "microphonePermission": "Le micro est utilis\u00e9 pour les appels de formation en petit groupe, uniquement pendant l'appel."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}

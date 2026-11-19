@@ -1,0 +1,432 @@
+rules_version = '2';
+
+// Règles de sécurité de la base de l'application AFVN Nantes.
+// Principe : tout est interdit sauf ce qui est explicitement autorisé ci-dessous.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+    function profile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    function hasProfile() {
+      return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+    // Membre validé par l'église
+    function isActive() {
+      return hasProfile() && profile().status == 'active';
+    }
+    function isAdmin() {
+      return isActive() && 'admin' in profile().roles;
+    }
+    // Équipe de prière : intercesseurs, responsables et administrateurs
+    function isPrayerTeam() {
+      return isActive() && profile().roles.hasAny(['intercessor', 'leader', 'admin']);
+    }
+    // Responsables : publient les actualités
+    function isLeader() {
+      return isActive() && profile().roles.hasAny(['leader', 'admin']);
+    }
+    function isServant() {
+      return isActive() && profile().roles.hasAny(['servant', 'intercessor', 'trainer', 'leader', 'admin']);
+    }
+    // Formateurs : gèrent la formation des serviteurs
+    function isTrainer() {
+      return isActive() && profile().roles.hasAny(['trainer', 'admin']);
+    }
+    function onlyChanged(keys) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
+    }
+    function validName(v) {
+      return v is string && v.size() >= 1 && v.size() <= 60;
+    }
+
+    match /users/{uid} {
+      // Chacun lit son profil ; les administrateurs lisent tout ;
+      // les membres validés voient l'annuaire (profils actifs ayant accepté d'y figurer).
+      allow read: if signedIn() && (
+        request.auth.uid == uid
+        || isAdmin()
+        || (isActive() && resource.data.status == 'active' && resource.data.directoryVisible == true)
+      );
+
+      // Inscription : toujours « en attente », simple membre, absent de l'annuaire.
+      allow create: if signedIn()
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['firstName', 'lastName', 'email', 'phone', 'status', 'roles', 'directoryVisible', 'acceptedTermsAt', 'createdAt'])
+        && validName(request.resource.data.firstName)
+        && validName(request.resource.data.lastName)
+        && request.resource.data.email == request.auth.token.email.lower()
+        && (!('phone' in request.resource.data) || (request.resource.data.phone is string && request.resource.data.phone.size() <= 30))
+        && request.resource.data.status == 'pending'
+        && request.resource.data.roles == ['member']
+        && request.resource.data.directoryVisible == false
+        && request.resource.data.acceptedTermsAt == request.time
+        && request.resource.data.createdAt == request.time;
+
+      // Le membre modifie uniquement ses informations personnelles ;
+      // seul un administrateur change le statut (validation) et les rôles.
+      allow update: if signedIn() && (
+        (request.auth.uid == uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['firstName', 'lastName', 'phone', 'directoryVisible'])
+          && validName(request.resource.data.firstName)
+          && validName(request.resource.data.lastName)
+          && request.resource.data.directoryVisible is bool)
+        || (isAdmin()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'roles', 'reviewedAt'])
+          && request.resource.data.status in ['pending', 'active', 'rejected', 'suspended']
+          && request.resource.data.roles is list
+          && request.resource.data.roles.hasOnly(['member', 'servant', 'intercessor', 'trainer', 'leader', 'admin'])
+          && 'member' in request.resource.data.roles)
+      );
+
+      // Suppression du compte par son titulaire (droit à l'effacement) ou par un administrateur.
+      allow delete: if signedIn() && (request.auth.uid == uid || isAdmin());
+    }
+
+    // Appareils du membre (jetons de notification) : lui seul peut les écrire.
+    // Les notifications sont envoyées par les Cloud Functions (accès serveur).
+    match /users/{uid}/devices/{token} {
+      allow read, delete: if signedIn() && request.auth.uid == uid;
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['token', 'platform', 'updatedAt'])
+        && request.resource.data.token == token
+        && request.resource.data.token is string && request.resource.data.token.size() < 300
+        && request.resource.data.platform in ['ios', 'android']
+        && request.resource.data.updatedAt == request.time;
+    }
+
+    // ——— Demandes de prière ———
+    // Visibles uniquement par leur auteur et l'équipe de prière.
+    match /prayers/{id} {
+      allow read: if signedIn() && (resource.data.uid == request.auth.uid || isPrayerTeam());
+
+      allow create: if isActive()
+        && request.resource.data.keys().hasOnly(['uid', 'authorName', 'anonymous', 'text', 'status', 'prayedBy', 'createdAt', 'updatedAt'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.anonymous is bool
+        && (request.resource.data.anonymous
+              ? request.resource.data.authorName == null
+              : request.resource.data.authorName is string && request.resource.data.authorName.size() <= 130)
+        && request.resource.data.text is string
+        && request.resource.data.text.size() >= 3 && request.resource.data.text.size() <= 1500
+        && request.resource.data.status == 'received'
+        && request.resource.data.prayedBy == []
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+
+      allow update: if signedIn() && (
+        // L'équipe : « je prie » (ajoute uniquement son propre identifiant) et suivi du statut
+        (isPrayerTeam()
+          && onlyChanged(['prayedBy', 'status', 'updatedAt'])
+          && request.resource.data.prayedBy.toSet().difference(resource.data.prayedBy.toSet()).hasOnly([request.auth.uid])
+          && resource.data.prayedBy.toSet().difference(request.resource.data.prayedBy.toSet()).size() == 0
+          && request.resource.data.status in ['received', 'praying', 'answered']
+          && request.resource.data.updatedAt == request.time)
+        // L'auteur : annonce que sa prière est exaucée, avec un témoignage facultatif
+        || (resource.data.uid == request.auth.uid
+          && onlyChanged(['status', 'testimony', 'updatedAt'])
+          && request.resource.data.status == 'answered'
+          && (!('testimony' in request.resource.data) || (request.resource.data.testimony is string && request.resource.data.testimony.size() <= 1500))
+          && request.resource.data.updatedAt == request.time)
+      );
+
+      allow delete: if signedIn() && (resource.data.uid == request.auth.uid || isAdmin());
+    }
+
+    // ——— Actualités ———
+    // Lues par les membres validés (ou les seuls serviteurs), publiées par les responsables.
+    match /news/{id} {
+      allow read: if isActive() && (resource.data.audience == 'all' || isServant());
+
+      allow create: if isLeader()
+        && request.resource.data.keys().hasOnly(['title', 'body', 'audience', 'pinned', 'notify', 'authorUid', 'authorName', 'createdAt'])
+        && request.resource.data.title is string && request.resource.data.title.size() >= 3 && request.resource.data.title.size() <= 120
+        && request.resource.data.body is string && request.resource.data.body.size() >= 3 && request.resource.data.body.size() <= 5000
+        && request.resource.data.audience in ['all', 'servants']
+        && request.resource.data.pinned is bool
+        && request.resource.data.notify is bool
+        && request.resource.data.authorUid == request.auth.uid
+        && request.resource.data.authorName is string
+        && request.resource.data.createdAt == request.time;
+
+      allow update: if isLeader()
+        && onlyChanged(['title', 'body', 'audience', 'pinned'])
+        && request.resource.data.title is string && request.resource.data.title.size() >= 3 && request.resource.data.title.size() <= 120
+        && request.resource.data.body is string && request.resource.data.body.size() >= 3 && request.resource.data.body.size() <= 5000
+        && request.resource.data.audience in ['all', 'servants']
+        && request.resource.data.pinned is bool;
+
+      allow delete: if isLeader();
+    }
+
+    // ——— Événements & inscriptions ———
+    function eventDoc(id) {
+      return get(/databases/$(database)/documents/events/$(id)).data;
+    }
+    function validEvent(d) {
+      return d.title is string && d.title.size() >= 3 && d.title.size() <= 120
+        && d.description is string && d.description.size() <= 5000
+        && d.location is string && d.location.size() <= 200
+        && d.startsAt is timestamp
+        && d.audience in ['all', 'servants']
+        && d.registrationOpen is bool
+        && (d.capacity == null || (d.capacity is int && d.capacity > 0 && d.capacity <= 5000));
+    }
+
+    match /events/{id} {
+      allow read: if isActive() && (resource.data.audience == 'all' || isServant());
+      // Le nombre d'inscrits (registeredCount) n'est tenu que par le serveur.
+      allow create: if isLeader()
+        && request.resource.data.keys().hasOnly(['title', 'description', 'location', 'startsAt', 'audience', 'capacity', 'registrationOpen', 'registeredCount', 'createdBy', 'createdAt'])
+        && validEvent(request.resource.data)
+        && request.resource.data.registeredCount == 0
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.createdAt == request.time;
+      allow update: if isLeader()
+        && onlyChanged(['title', 'description', 'location', 'startsAt', 'audience', 'capacity', 'registrationOpen'])
+        && validEvent(request.resource.data);
+      allow delete: if isLeader();
+
+      // Inscription : un document par membre (identifiant = son uid).
+      match /registrations/{uid} {
+        allow read: if signedIn() && (request.auth.uid == uid || isLeader());
+        allow create: if isActive()
+          && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['uid', 'name', 'guests', 'createdAt'])
+          && request.resource.data.uid == uid
+          && request.resource.data.name is string && request.resource.data.name.size() <= 130
+          && request.resource.data.guests is int && request.resource.data.guests >= 0 && request.resource.data.guests <= 5
+          && request.resource.data.createdAt == request.time
+          && eventDoc(id).registrationOpen == true
+          && (eventDoc(id).audience == 'all' || isServant())
+          && (eventDoc(id).capacity == null || eventDoc(id).registeredCount + 1 + request.resource.data.guests <= eventDoc(id).capacity);
+        allow delete: if signedIn() && (request.auth.uid == uid || isLeader());
+      }
+    }
+
+    // ——— Parcours de baptême ———
+    // Une demande par membre (identifiant = son uid), suivie par les responsables.
+    match /baptisms/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isLeader());
+      allow create: if isActive()
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['uid', 'name', 'motivation', 'status', 'steps', 'createdAt', 'updatedAt'])
+        && request.resource.data.uid == uid
+        && request.resource.data.name is string && request.resource.data.name.size() <= 130
+        && request.resource.data.motivation is string && request.resource.data.motivation.size() >= 10 && request.resource.data.motivation.size() <= 3000
+        && request.resource.data.status == 'requested'
+        && request.resource.data.steps == []
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+      allow update: if signedIn() && (
+        // Le membre peut seulement annuler sa demande
+        (request.auth.uid == uid
+          && onlyChanged(['status', 'updatedAt'])
+          && request.resource.data.status == 'cancelled'
+          && request.resource.data.updatedAt == request.time)
+        // Les responsables font avancer le parcours
+        || (isLeader()
+          && onlyChanged(['status', 'steps', 'scheduledAt', 'leaderMessage', 'updatedAt'])
+          && request.resource.data.status in ['requested', 'interview', 'preparation', 'scheduled', 'baptized', 'cancelled']
+          && request.resource.data.steps is list && request.resource.data.steps.size() <= 10
+          && (!('scheduledAt' in request.resource.data) || request.resource.data.scheduledAt == null || request.resource.data.scheduledAt is timestamp)
+          && (!('leaderMessage' in request.resource.data) || (request.resource.data.leaderMessage is string && request.resource.data.leaderMessage.size() <= 2000))
+          && request.resource.data.updatedAt == request.time)
+      );
+      allow delete: if signedIn() && (request.auth.uid == uid || isAdmin());
+    }
+
+    // ——— Formation des serviteurs ———
+    // Progression personnelle : écrite par le serviteur, lue par lui et les formateurs.
+    match /users/{uid}/progress/{moduleId} {
+      allow read: if signedIn() && (request.auth.uid == uid || isTrainer());
+      allow write: if isServant() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['lessons', 'name', 'updatedAt'])
+        && request.resource.data.lessons is list && request.resource.data.lessons.size() <= 50
+        && request.resource.data.name is string && request.resource.data.name.size() <= 130
+        && request.resource.data.updatedAt == request.time;
+    }
+    match /{path=**}/progress/{moduleId} {
+      allow read: if isTrainer();
+    }
+
+    // Manuels : « student » pour les serviteurs, « trainer » pour les formateurs uniquement.
+    match /trainingFiles/{id} {
+      allow read: if isTrainer() || (isServant() && resource.data.kind == 'student');
+      allow create: if isTrainer()
+        && request.resource.data.keys().hasOnly(['moduleId', 'kind', 'name', 'path', 'size', 'uploadedBy', 'createdAt'])
+        && request.resource.data.kind in ['student', 'trainer']
+        && request.resource.data.moduleId is string && request.resource.data.moduleId.size() <= 40
+        && request.resource.data.name is string && request.resource.data.name.size() <= 200
+        && request.resource.data.path == 'training/' + request.resource.data.moduleId + '/' + request.resource.data.kind + '/' + id + '.pdf'
+        && request.resource.data.size is int && request.resource.data.size <= 30 * 1024 * 1024
+        && request.resource.data.uploadedBy == request.auth.uid
+        && request.resource.data.createdAt == request.time;
+      allow delete: if isTrainer();
+    }
+
+    // Sessions de formation (direct YouTube non répertorié ou appel en petit groupe) et questions.
+    match /trainingSessions/{id} {
+      allow read: if isServant();
+      allow create: if isTrainer()
+        && request.resource.data.keys().hasOnly(['moduleId', 'title', 'startsAt', 'kind', 'youtubeUrl', 'createdBy', 'createdAt'])
+        && request.resource.data.title is string && request.resource.data.title.size() >= 3 && request.resource.data.title.size() <= 120
+        && request.resource.data.startsAt is timestamp
+        && request.resource.data.kind in ['live', 'group']
+        && (request.resource.data.youtubeUrl == null || (request.resource.data.youtubeUrl is string && request.resource.data.youtubeUrl.matches('^https://(www\\.)?(youtube\\.com|youtu\\.be)/.*')))
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.createdAt == request.time;
+      allow update: if isTrainer() && onlyChanged(['title', 'startsAt', 'youtubeUrl']);
+      allow delete: if isTrainer();
+
+      // Appel vidéo en petit groupe : présence des participants…
+      match /participants/{uid} {
+        allow read: if isServant();
+        allow create, update: if isServant() && request.auth.uid == uid
+          && get(/databases/$(database)/documents/trainingSessions/$(id)).data.kind == 'group'
+          && request.resource.data.keys().hasOnly(['uid', 'name', 'updatedAt'])
+          && request.resource.data.uid == uid
+          && request.resource.data.name is string && request.resource.data.name.size() <= 130
+          && request.resource.data.updatedAt == request.time;
+        allow delete: if signedIn() && (request.auth.uid == uid || isTrainer());
+      }
+      // … et messages de mise en relation (offre, réponse, candidats réseau), lus par leur seul destinataire.
+      match /signals/{sig} {
+        allow read: if signedIn() && (resource.data.to == request.auth.uid || resource.data.from == request.auth.uid);
+        allow create: if isServant()
+          && request.resource.data.keys().hasOnly(['from', 'to', 'type', 'payload', 'createdAt'])
+          && request.resource.data.from == request.auth.uid
+          && request.resource.data.to is string && request.resource.data.to != request.auth.uid
+          && request.resource.data.type in ['offer', 'answer', 'candidate']
+          && request.resource.data.payload is string && request.resource.data.payload.size() <= 20000
+          && request.resource.data.createdAt == request.time;
+        allow delete: if signedIn() && (resource.data.to == request.auth.uid || resource.data.from == request.auth.uid);
+      }
+
+      match /questions/{qid} {
+        allow read: if isServant();
+        allow create: if isServant()
+          && request.resource.data.keys().hasOnly(['uid', 'name', 'text', 'answered', 'createdAt'])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.name is string && request.resource.data.name.size() <= 130
+          && request.resource.data.text is string && request.resource.data.text.size() >= 2 && request.resource.data.text.size() <= 600
+          && request.resource.data.answered == false
+          && request.resource.data.createdAt == request.time;
+        allow update: if isTrainer() && onlyChanged(['answered']) && request.resource.data.answered is bool;
+        allow delete: if signedIn() && (resource.data.uid == request.auth.uid || isTrainer());
+      }
+    }
+
+    // ——— Ministères & groupes ———
+    function inMinistry(mid) {
+      return exists(/databases/$(database)/documents/ministries/$(mid)/members/$(request.auth.uid));
+    }
+    match /ministries/{mid} {
+      allow read: if isActive();
+      allow create, update: if isLeader()
+        && request.resource.data.keys().hasOnly(['name', 'description', 'createdAt'])
+        && request.resource.data.name is string && request.resource.data.name.size() >= 2 && request.resource.data.name.size() <= 60
+        && request.resource.data.description is string && request.resource.data.description.size() <= 500;
+      allow delete: if isLeader();
+
+      // Chacun rejoint ou quitte un ministère ; les responsables peuvent retirer un membre.
+      match /members/{uid} {
+        allow read: if isActive();
+        allow create: if isActive() && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['uid', 'name', 'joinedAt'])
+          && request.resource.data.uid == uid
+          && request.resource.data.name is string && request.resource.data.name.size() <= 130
+          && request.resource.data.joinedAt == request.time;
+        allow delete: if signedIn() && (request.auth.uid == uid || isLeader());
+      }
+
+      // Discussion du groupe : réservée aux membres du ministère (et aux responsables).
+      match /messages/{id} {
+        allow read: if isActive() && (inMinistry(mid) || isLeader());
+        allow create: if isActive() && inMinistry(mid)
+          && request.resource.data.keys().hasOnly(['uid', 'name', 'text', 'createdAt'])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.name is string && request.resource.data.name.size() <= 130
+          && request.resource.data.text is string && request.resource.data.text.size() >= 1 && request.resource.data.text.size() <= 2000
+          && request.resource.data.createdAt == request.time;
+        allow delete: if signedIn() && (resource.data.uid == request.auth.uid || isLeader());
+      }
+    }
+
+    // ——— Messagerie privée ———
+    // Conversation entre deux membres : identifiant = les deux uid triés, séparés par « _ ».
+    function userDoc(uid) {
+      return get(/databases/$(database)/documents/users/$(uid)).data;
+    }
+    function reachable(uid) {
+      return userDoc(uid).status == 'active'
+        && (userDoc(uid).directoryVisible == true || userDoc(uid).roles.hasAny(['leader', 'admin']) || isLeader());
+    }
+    function hasBlocked(owner, other) {
+      return exists(/databases/$(database)/documents/users/$(owner)/blocked/$(other));
+    }
+    match /conversations/{cid} {
+      allow read: if isActive() && request.auth.uid in resource.data.members;
+      allow create: if isActive()
+        && request.resource.data.keys().hasOnly(['members', 'names', 'lastText', 'updatedAt'])
+        && request.resource.data.members is list && request.resource.data.members.size() == 2
+        && request.auth.uid in request.resource.data.members
+        && request.resource.data.members[0] < request.resource.data.members[1]
+        && cid == request.resource.data.members[0] + '_' + request.resource.data.members[1]
+        && reachable(request.resource.data.members[0] == request.auth.uid ? request.resource.data.members[1] : request.resource.data.members[0])
+        && request.resource.data.names is map
+        && request.resource.data.lastText is string && request.resource.data.lastText.size() <= 200
+        && request.resource.data.updatedAt == request.time;
+      allow update: if isActive() && request.auth.uid in resource.data.members
+        && onlyChanged(['lastText', 'updatedAt'])
+        && request.resource.data.lastText is string && request.resource.data.lastText.size() <= 200
+        && request.resource.data.updatedAt == request.time;
+
+      match /messages/{id} {
+        function conv() {
+          return get(/databases/$(database)/documents/conversations/$(cid)).data;
+        }
+        allow read: if isActive() && request.auth.uid in conv().members;
+        allow create: if isActive() && request.auth.uid in conv().members
+          && request.resource.data.keys().hasOnly(['uid', 'text', 'createdAt'])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.text is string && request.resource.data.text.size() >= 1 && request.resource.data.text.size() <= 2000
+          && request.resource.data.createdAt == request.time
+          // Un membre qui vous a bloqué ne reçoit plus vos messages.
+          && !hasBlocked(conv().members[0] == request.auth.uid ? conv().members[1] : conv().members[0], request.auth.uid);
+        allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+      }
+    }
+
+    // Liste de blocage personnelle
+    match /users/{uid}/blocked/{other} {
+      allow read, delete: if signedIn() && request.auth.uid == uid;
+      allow create: if isActive() && request.auth.uid == uid && other != uid
+        && request.resource.data.keys().hasOnly(['createdAt'])
+        && request.resource.data.createdAt == request.time;
+    }
+
+    // ——— Modération : signalements ———
+    match /reports/{id} {
+      allow read, update: if isAdmin();
+      allow create: if isActive()
+        && request.resource.data.keys().hasOnly(['reporterUid', 'targetUid', 'targetPath', 'excerpt', 'reason', 'status', 'createdAt'])
+        && request.resource.data.reporterUid == request.auth.uid
+        && request.resource.data.targetUid is string
+        && request.resource.data.targetPath is string && request.resource.data.targetPath.size() <= 300
+        && request.resource.data.excerpt is string && request.resource.data.excerpt.size() <= 300
+        && request.resource.data.reason in ['offensive', 'harassment', 'spam', 'other']
+        && request.resource.data.status == 'open'
+        && request.resource.data.createdAt == request.time;
+      allow delete: if isAdmin();
+    }
+
+    // Tout le reste est fermé tant que les modules suivants ne sont pas ouverts.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

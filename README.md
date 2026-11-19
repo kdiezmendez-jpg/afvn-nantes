@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AFVN Nantes — site web & appli
 
-## Getting Started
+Site de l'Église AFVN de Nantes (Assemblées Fleuve de Vie pour les Nations), construit avec Next.js 16 et Tailwind CSS 4.
+Le site est aussi une **appli installable** (PWA) : sur téléphone, « Ajouter à l'écran d'accueil ».
 
-First, run the development server:
+## Démarrer
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev        # http://localhost:3000
+npm run build      # vérifie que tout compile
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Modifier le contenu
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Presque tout se modifie dans **`lib/site.ts`** :
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Quoi | Clé dans `lib/site.ts` |
+|---|---|
+| Adresse, téléphone, réseaux sociaux | `site` |
+| Formulaire d'accueil CESA (et son QR code, généré automatiquement) | `site.welcomeForm` |
+| Formulaire de demande de prière (vide = bouton « Appeler ») | `site.prayerForm` |
+| Lien de don en ligne, ex. HelloAsso (vide = « Bientôt ») | `site.donationUrl` |
+| Annonce à la une de l'accueil (`null` pour la masquer) | `announcement` |
+| Rendez-vous hebdomadaires (compte à rebours, agenda, rappel .ics, Google) | `schedule` |
+| Ministères, ADN, événements, vidéos, galerie, FAQ, mot du pasteur | `ministries`, `dna`, `events`, `featuredVideos`, `gallery`, `faq`, `pastorQuote` |
+| Couleurs et typographies | `app/globals.css` (`@theme`) |
+| Mentions légales, éditeur, e-mail de contact, durée de conservation | `lib/legal.ts` (les champs vides s'affichent « à compléter ») |
 
-## Learn More
+Variable d'environnement à définir en production : `NEXT_PUBLIC_SITE_URL` (ex. `https://www.afvn-nantes.fr`).
 
-To learn more about Next.js, take a look at the following resources:
+## Appli (PWA)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `app/manifest.ts` : nom, couleurs et icônes de l'appli.
+- `public/sw.js` : consultation hors ligne (page `/hors-ligne` en secours). Changer `VERSION` pour forcer la mise à jour du cache.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Cookies, confidentialité et mesure d'audience
 
-## Deploy on Vercel
+- Bandeau de consentement conforme CNIL (`components/cookie-banner.tsx`) : rien n'est chargé avant le choix ;
+  « Tout refuser » et « Tout accepter » au même niveau ; choix conservé 6 mois ; lien « Gérer les cookies » dans le pied de page.
+- Vidéos YouTube et carte Google Maps chargées seulement avec accord (`youtube-lite.tsx`, `map-embed.tsx`).
+- Mesure d'audience : Vercel Web Analytics, sans cookie, activée seulement après accord.
+  **À activer une fois dans Vercel : projet → onglet Analytics → Enable.**
+- Pages légales : `/mentions-legales`, `/confidentialite`, `/conditions`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Sécurité
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- En-têtes HTTP stricts dans `next.config.ts` : CSP, HSTS, anti-clickjacking, Permissions-Policy, pas d'en-tête `X-Powered-By`.
+- Vidéos YouTube chargées seulement au clic, via `youtube-nocookie.com`.
+- Dependabot (`.github/dependabot.yml`) et CI GitHub Actions (lint, build, `npm audit`).
+
+## Skills Claude Code
+
+`.claude/skills/` contient des skills (Vercel, Expo, Codelynx) utilisés par Claude Code sur ce projet.
